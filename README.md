@@ -1,52 +1,43 @@
-## CI&T Acquia mimic Docker base image
+### CI&T Acquia mimic Docker base image
 
-This is the source code of [CI&T Acquia Docker image](https://hub.docker.com/r/ciandtsoftware/acquia/) hosted at [Docker hub](https://hub.docker.com/).
+This Docker image intends to be containerized mimic solution of Acquia environment.
 
-It contents the source code for building the publicly accessible Docker image and some scripts to easy maintain and update its code.
+The source code is available under GPLv3 at Bitbucket in this [link](https://bitbucket.org/ciandt_it/docker-hub-acquia).
 
 Our intent is to have a Docker container that mimics Acquia environment with the same version of softwares and OS.
 
 Utilizing Docker technologies that already provides an easy way of spinning up new environments and its dependecies, this image can speed-up developers which different backgrounds and equipments to have a fast local environment allowing them to easily integrate in automated tests and deployment pipelines.
 
-Keeping it short, this image contains a working set of Ubuntu, Apache and PHP. Plus, there are also pre-loaded scripts that can easily customized to install other components if they are required like Drush, Grunt, etc...
+Keeping it short, this image contains the same working set of Ubuntu, Apache and PHP that Acquia utilizes. Plus, there are also pre-loaded scripts that can easily customized to install other components if they are required like Drush, Grunt, etc...
+
+### [*Quick Start*](#quickstart)
+
+__Download the image__
+
+```
+docker pull ciandtsoftware/acquia:2016-11-08
+```
+
+__Run a container__
+
+```
+docker run \
+  --volume /your/code/folder/before/docroot:/var/www/html \
+  --volume /your/file/server/mounted/folder:/nfs \
+  --name myContainer \
+  --detach \
+  ciandtsoftware/acquia:2016-11-08
+```
+
+__Check running containers__
+
+```
+docker ps --all
+```
 
 * * *
 
-## [*Quick Start*](#quickstart)
-
-__Clone the project code__
-
-```
-git clone https://bitbucket.org/ciandt_it/docker-hub-acquia.git
-```
-
-__Checkout the latest tag__
-
-By the time this was written it was 2016-11-14, please check if there is a new one.
-
-```
-git checkout 2016-11-14
-```
-
-__Build__
-
-```
-make
-```
-* * *
-
-## [*Requirements*](#requirements)
-
-Before proceeding please check the required packages below:
-
- - docker engine => 1.12
- - make
- - grep
- - curl
-
-* * *
-
-## [Software Versions](#software-versions)
+### [Software Versions](#software-versions)
 
 These are the currently versions bundled in this image.
 
@@ -54,7 +45,7 @@ Already installed
 
 * Ubuntu 12.04.5
 * Apache 2.2
-+ PHP 5.6.24 (plus extensions)
+* PHP 5.6.24 (plus extensions)
     * Gnupg 1.4.0
     * HTTP 2.5.5
     * Igbinary 1.2.1
@@ -74,175 +65,55 @@ Pre-loaded scripts for customization
 
 * Composer 1.2.1
 * Drush 8.1.3
-+ Grunt CLI 1.2.0
+* Grunt CLI 1.2.0
     * Compass 1.1.1
 * Node.js 0.10.37
-+ Ruby 2.3.0
+* Ruby 2.3.0
     * Bundler 1.13.6
     * Compass 1.0.3  
 
 * * *
 
-## [Build process](#build-process)
+### [Running standalone](#running-standalone)
 
-There are some required environment variables that are already pre-defined in Dockerfile to specify software versions for the build step, if you need to modify them, please look for any line starting with __ENV__.
+If you just need the container there is a snippet that can help running in standalone mode.
 
-More information about ENV is available at this [link](https://docs.docker.com/engine/reference/builder/#/env).
+```
+# define variables
+HOST_CODE_FOLDER=""${HOME}"/workspace/mySite"
+HOST_FILES_FOLDER=""${HOME}"/workspace/myNFSstorage"
+DOCKER_CONTAINER_NAME="myContainer"
+DOCKER_IMAGE="ciandtsoftware/acquia:2016-11-08"
+
+# run your container
+docker run \
+  --volume "${HOST_CODE_FOLDER}":/var/www/html \
+  --volume "${HOST_FILES_FOLDER}":/nfs \
+  --name "${DOCKER_CONTAINER_NAME}" \
+  --detach \
+  "${DOCKER_IMAGE}"
+```
+
+After run, you can inquiry Docker service and get the IP address of your newly running container named __myContainer__ by using the following command:
+
+```
+docker inspect --format '{{ .NetworkSettings.IPAddress }} myContainer'
+```
+
+Let's suppose that the returned IP address was __172.17.0.2__.
+Just open a browser and try to access:
+
+> http://172.17.0.2
+
+Your website should be displayed perfectly.
 
 * * *
 
-## [.env](#env)
+### [Customizing](#customizing)
 
-Thinking in a multi-stage environment, a file name __.env__ is provided at repository root and it is used to define which set of ENV variables are going to load-up during Docker run.
+As intended, you can take advantage from this image to build your own and already configure everything that a project requires.
 
-Default value is:
-
-> __ENVIRONMENT="local"__
-
-It is possible to change to any desired string value. This is just an ordinary alias to load one of configuration files that can exist in __conf__ folder.
-
-Example, if you change it to:
-
-> ENVIRONMENT="__dev__"
-
-When you run the container it will load variables from:
-
-> conf/acquia.__dev__.env
-
-It is an easy way to inject new variables when developing a new script.
-
-* * *
-
-## [Run process](#run-process)
-
-As described in .env section, run will load environment variables from a file.
-This approach is better describe in official Docker docs in the [link](https://docs.docker.com/compose/env-file/).
-
-* * *
-
-## [Debug and Shell access](#debug-shell)
-
-Case there is a need of debug or inspect inside the container there are two options to help:
-
-> make debug
-
-and
-
-> make shell
-
-The first one runs the container and attaches __stderr__ and __stdout__ to current terminal and prints relevant information.
-
-Second one runs the container and connects to its shell (bash) with root access. So, you can inspect files, configurations and the whole container environment.
-
-* * *
-
-## [Testing](#testing)
-
-After any modification we strongly recommend to run tests against the container to check if everything is running smoothly.
-This can be done with the command:
-
-> make tests
-
-These are simple tests at the moment, therefore, very usefull.
-
-* * *
-
-## [All steps](#all-steps)
-
-Now that you __already__ __read__ the previous steps, you are aware of each function. Having said that, the easisest way of wrapping up everything together is to just run:
-
-> make
-
-or
-
-> make all
-
-This command will __build__, __run__ and __test__ your recently created container.
-
-## [Cleaning up](#cleaning-up)
-
-Since Docker generates tons of layers that can fast outgrow your hard drive, after that you have finished any modification, we encourage to clean up your environment.
-
-There are two commands for this task:
-
-> make clean
-
-That stops the running container, removes it and deletes its Docker image.
-This particular one is very usefull when you are performing cjanges and you need to rebuild your container to check for modifications.
-In addition, you can combine with __make shell__ for instance, like in this example:
-
-> make clean && make shell
-
-And the second one is:
-
-> make clean-all
-
-Actually, this one calls __make clean__ and then removes Docker dangling images and volumes.
-More information about dangling can be found at this [link](https://docs.docker.com/engine/reference/commandline/images/).
-
-* * *
-
-## [How-to](#how-to)
-
-There is a Makefile in the root of the repository with all actions that can be performed.
-
-#### [Build](#how-to-build)
-
-```
-make build
-```
-
-#### [Run](#how-to-run)
-
-```
-make run
-```
-
-#### [Test](#how-to-test)
-
-```
-make test
-```
-
-#### [Debug](#how-to-debug)
-
-```
-make debug
-```
-
-#### [Shell access](#how-to-shell)
-
-```
-make shell
-```
-
-#### [Clean](#how-to-clean)
-
-```
-make clean
-```
-
-#### [Clean All](#how-to-clean-all)
-
-```
-make clean-all
-```
-
-#### [All - Build / Run / Test](#how-to-all)
-
-```
-make all
-```
-
-Or simply
-
-```
-make
-```
-
-* * *
-
-## [CI&T scripts](#scripts)
+#### [CI&T scripts](#scripts)
 
 There are available scripts to help customization:
 
@@ -264,7 +135,7 @@ All scripts are located inside folder __/root/ciandt__ and must be declared in t
 Just to give an quick example, you can create your own Docker image based on this one that already ships Drush installed as well. A Dockerfile performing it could be like:
 
 ```
-FROM ciandtsoftware/acquia
+FROM ciandtsoftware/acquia:2016-11-08
 
 # installs required package
 RUN apt-get update \
@@ -285,14 +156,99 @@ Then you just need to build / run your new customized Docker image and you are r
 
 * * *
 
-## [More](#more)
+### [Running in Docker-Compose](#running-docker-compose)
 
-Furthermore, there is an additional documentation at our Docker Hub page at https://hub.docker.com/r/ciandtsoftware/acquia/ .
+Since a project is not going to use solely this container, it may need a Docker-Compose file.
 
-We strongly encourage reading it too!
+Just to exercise, follow an example of this running customized and als behind a __Nginx__ proxy.
+
+Create a new folder and fill with these 3 files and respective folders;
+
+##### [__conf/acquia.local.env__](#acquia-env)
+
+```
+## Nginx proxy configuration
+# https://hub.docker.com/r/jwilder/nginx-proxy/
+VIRTUAL_HOST=mySite.local
+```
+
+##### [__app/acquia/Dockerfile__](#dockerfile)
+
+```
+FROM ciandtsoftware/acquia:2016-11-08
+
+# installs required package
+RUN apt-get update \
+    && apt-get install \
+                --no-install-recommends \
+                --assume-yes \
+                make
+
+# defines Drush version
+ENV DRUSH_VERSION 8.1.3
+
+# installs Drush
+RUN cd /root/ciandt \
+    && make install-drush
+```
+
+##### [__docker-compose.yml__](#docker-compose)
+
+```
+acquia:
+  build: ./acquia
+  container_name: acquia
+  env_file: ../conf/acquia.local.env
+
+nginx:
+  image: jwilder/nginx-proxy:latest
+  container_name: nginx
+  volumes:
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+  ports:
+    - "80:80"
+    - "443:443"
+```
+
+Then just spin-up your Docker-Compose with the command:
+
+```
+docker-compose up -d
+```
+
+Inspect Nginx container IP address:
+
+```
+docker inspect \
+        --format \
+        "{{.NetworkSettings.Networks.bridge.IPAddress }}" \
+        "nginx"
+```
+
+Use the IP address to update __hosts__ file. Let's suppose that was 172.17.0.2.
+
+Then, add an entry to __/etc/hosts__.
+> 172.17.0.2 acquia.local
+
+And now, try to access in the browser
+> http://acquia.local
+
+Voilà!
+Your project now have Nginx and Acquia up and running.
+\\o/
 
 * * *
+
+### [Contributing](#contributing)
+
+If you want to contribute, suggest improvements and report issues, please go to our [Bitbucket repository](https://bitbucket.org/ipinatti_cit/docker-hub-acquia).
+
+* * *
+
+Please feel free to drop a message in the comments section.
 
 Happy coding, enjoy!!
 
 "We develop people before we develop software" - Cesar Gon, CEO
+
+* * *
