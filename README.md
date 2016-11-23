@@ -68,7 +68,7 @@ And also, before proceeding please check the __required__ packages below:
 __*Clone the desired project code version*__
 
 ```
-DESIRED_VERSION="acquia-2016-11-08"
+DESIRED_VERSION="acquia-2016-11-14"
 
 git clone \
   --branch "${DESIRED_VERSION}" \
