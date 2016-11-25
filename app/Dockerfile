@@ -2,7 +2,7 @@ FROM ubuntu:12.04.5
 
 # define Docker image label information
 LABEL com.ciandt.vendor="CI&T Software SA" \
-      com.ciandt.release-date="2016-11-08" \
+      com.ciandt.release-date="2016-11-25" \
       com.ciandt.maintainers.1="Ivan Pinatti - @ivan_pinatti" \
       com.ciandt.maintainers.2="Thomas Bryan - @thobryan"
 
@@ -442,8 +442,8 @@ RUN sed --in-place \
 # create a simple test page
 RUN echo '<?php phpinfo(); ?>' > /var/www/test.php
 
-# create NFS folder in order of mounting files
-RUN mkdir --parents /nfs
+# create GFS folder like Acquia in order of mounting files
+RUN mkdir --parents /mnt/gfs
 
 ## DUMB-init
 # more information at: https://github.com/Yelp/dumb-init
