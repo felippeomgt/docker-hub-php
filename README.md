@@ -1,6 +1,6 @@
 ## CI&T PHP Docker image(s)
 
-These Docker image(s) intends to be a containerized Memcached solution for multiple purposes.
+These Docker image(s) intends to be a containerized PHP/Apache solution for multiple purposes.
 
 The source code is available under GPLv3 at Github in this [link]((https://github.com/ciandt-dev/docker-hub-php).
 
@@ -170,7 +170,7 @@ Just to exercise, follow an example of this running customized and also behind a
 
 Create a new folder and fill with these 3 files and respective folders;
 
-##### [__conf/php.local.env__](#php-env)
+#### [__*conf/php.local.env*__](#php-env)
 
 ```
 ## Nginx proxy configuration
@@ -198,7 +198,7 @@ RUN cd /root/ciandt \
     && make install-drush
 ```
 
-##### [__docker-compose.yml__](#docker-compose)
+##### [__*docker-compose.yml*__](#docker-compose)
 
 ```
 php:
@@ -270,6 +270,8 @@ Second, in each image version there is an additional README.MD file that explain
 We strongly encourage reading both!
 
 * * *
+
+Please feel free to drop a message in the comments section.
 
 Happy coding, enjoy!!
 
