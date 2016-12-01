@@ -1,51 +1,29 @@
-### CI&T Acquia mimic Docker base image
+## CI&T PHP Docker image(s)
 
-This Docker image intends to be containerized mimic solution of Acquia environment.
+These Docker image(s) intends to be a containerized Memcached solution for multiple purposes.
 
-The source code is available under GPLv3 at Bitbucket in this [link](https://bitbucket.org/ciandt_it/docker-hub-acquia).
+The source code is available under GPLv3 at Github in this [link]((https://github.com/ciandt-dev/docker-hub-php).
 
-Our intent is to have a Docker container that mimics Acquia environment with the same version of softwares and OS.
+By utilizing Docker technologies, that already provides an easy way of spinning up new environments along with its dependecies. This image can speed up developers which different backgrounds and equipments to create quickly a new local environment allowing them to easily integrate in automated tests and deployment pipelines.
 
-Utilizing Docker technologies that already provides an easy way of spinning up new environments and its dependecies, this image can speed-up developers which different backgrounds and equipments to have a fast local environment allowing them to easily integrate in automated tests and deployment pipelines.
+At this moment we have the following version(s).
 
-Keeping it short, this image contains the same working set of Ubuntu, Apache and PHP that Acquia utilizes. Plus, there are also pre-loaded scripts that can easily customized to install other components if they are required like Drush, Grunt, etc...
+### [Acquia](#acquia)
 
-### [*Quick Start*](#quickstart)
+Our intent is to be a Docker container that mimics Memcached running on Acquia environment with the same version of softwares, packages, modules and its underlying operating system.
 
-__Download the image__
+Acquia publishes a table with its platform infrastructure information on the link: https://docs.acquia.com/cloud/arch/tech-platform
 
-```
-docker pull ciandtsoftware/acquia:2016-11-08
-```
+These images will have the following name pattern: __acquia-*YYYY-MM-DD*__
 
-__Run a container__
+#### [*Bundled software versions*](#software-versions)
 
-```
-docker run \
-  --volume /your/code/folder/before/docroot:/var/www/html \
-  --volume /your/file/server/mounted/folder:/nfs \
-  --name myContainer \
-  --detach \
-  ciandtsoftware/acquia:2016-11-08
-```
+These are the currently software versions bundled in the image(s) by tag.
 
-__Check running containers__
-
-```
-docker ps --all
-```
-
-* * *
-
-### [Software Versions](#software-versions)
-
-These are the currently versions bundled in this image.
-
-Already installed
-
-* Ubuntu 12.04.5
-* Apache 2.2
-* PHP 5.6.24 (plus extensions)
+* acquia-latest __OR__ acquia-2016-11-30
+  * Ubuntu 12.04.5
+  * Apache 2.2.22
+  * PHP 5.6.24 (plus extensions)
     * Gnupg 1.4.0
     * HTTP 2.5.5
     * Igbinary 1.2.1
@@ -59,22 +37,50 @@ Already installed
     * Upload Progress 1.0.3.1
     * Xdebug 2.4.1
     * Xhprof beta
-* Dumb-init 1.2.0
+  * Dumb-init 1.2.0
+  * __Pre-loaded scripts for customization__
+    * Composer 1.2.1
+    * Drush 8.1.3
+    * Grunt CLI 1.2.0
+      * Compass 1.1.1
+    * Node.js 0.10.37
+    * Ruby 2.3.0
+      * Bundler 1.13.6
+      * Compass 1.0.3
 
-Pre-loaded scripts for customization
+__*Deprecated*__
 
-* Composer 1.2.1
-* Drush 8.1.3
-* Grunt CLI 1.2.0
-    * Compass 1.1.1
-* Node.js 0.10.37
-* Ruby 2.3.0
-    * Bundler 1.13.6
-    * Compass 1.0.3  
+* acquia-2016-11-25
+* acquia-2016-11-14
 
 * * *
 
-### [Running standalone](#running-standalone)
+## [Quick Start](#quickstart)
+
+__*Download the image*__
+
+```
+docker pull ciandtsoftware/php:acquia-latest
+```
+
+__*Run a container*__
+
+```
+docker run \
+  --name myContainer \
+  --detach \
+  ciandtsoftware/php:acquia-latest
+```
+
+__*Check running containers*__
+
+```
+docker ps --all
+```
+
+* * *
+
+## [Running standalone](#running-standalone)
 
 If you just need the container there is a snippet that can help running in standalone mode.
 
@@ -83,7 +89,7 @@ If you just need the container there is a snippet that can help running in stand
 HOST_CODE_FOLDER=""${HOME}"/workspace/mySite"
 HOST_FILES_FOLDER=""${HOME}"/workspace/myNFSstorage"
 DOCKER_CONTAINER_NAME="myContainer"
-DOCKER_IMAGE="ciandtsoftware/acquia:2016-11-08"
+DOCKER_IMAGE="ciandtsoftware/php:acquia-latest"
 
 # run your container
 docker run \
@@ -109,11 +115,11 @@ Your website should be displayed perfectly.
 
 * * *
 
-### [Customizing](#customizing)
+## [Customizing](#customizing)
 
 As intended, you can take advantage from this image to build your own and already configure everything that a project requires.
 
-#### [CI&T scripts](#scripts)
+### [CI&T scripts](#scripts)
 
 There are available scripts to help customization:
 
@@ -135,7 +141,7 @@ All scripts are located inside folder __/root/ciandt__ and must be declared in t
 Just to give an quick example, you can create your own Docker image based on this one that already ships Drush installed as well. A Dockerfile performing it could be like:
 
 ```
-FROM ciandtsoftware/acquia:2016-11-08
+FROM ciandtsoftware/php:acquia-latest
 
 # installs required package
 RUN apt-get update \
@@ -156,15 +162,15 @@ Then you just need to build / run your new customized Docker image and you are r
 
 * * *
 
-### [Running in Docker-Compose](#running-docker-compose)
+## [Running in Docker-Compose](#running-docker-compose)
 
 Since a project is not going to use solely this container, it may need a Docker-Compose file.
 
-Just to exercise, follow an example of this running customized and als behind a __Nginx__ proxy.
+Just to exercise, follow an example of this running customized and also behind a __Nginx__ proxy.
 
 Create a new folder and fill with these 3 files and respective folders;
 
-##### [__conf/acquia.local.env__](#acquia-env)
+##### [__conf/php.local.env__](#php-env)
 
 ```
 ## Nginx proxy configuration
@@ -172,10 +178,10 @@ Create a new folder and fill with these 3 files and respective folders;
 VIRTUAL_HOST=mySite.local
 ```
 
-##### [__app/acquia/Dockerfile__](#dockerfile)
+##### [__app/php/Dockerfile__](#dockerfile)
 
 ```
-FROM ciandtsoftware/acquia:2016-11-08
+FROM ciandtsoftware/php:acquia-latest
 
 # installs required package
 RUN apt-get update \
@@ -195,10 +201,10 @@ RUN cd /root/ciandt \
 ##### [__docker-compose.yml__](#docker-compose)
 
 ```
-acquia:
-  build: ./acquia
-  container_name: acquia
-  env_file: ../conf/acquia.local.env
+php:
+  build: ./php
+  container_name: php
+  env_file: ../conf/php.local.env
 
 nginx:
   image: jwilder/nginx-proxy:latest
@@ -228,27 +234,43 @@ docker inspect \
 Use the IP address to update __hosts__ file. Let's suppose that was 172.17.0.2.
 
 Then, add an entry to __/etc/hosts__.
-> 172.17.0.2 acquia.local
+> 172.17.0.2 php.local
 
 And now, try to access in the browser
-> http://acquia.local
+> http://php.local
 
 Voilà!
-Your project now have Nginx and Acquia up and running.
+Your project now have Nginx and PHP/Apache up and running.
 \\o/
 
 * * *
 
-### [Contributing](#contributing)
+## [User Feedback](#user-feedback)
 
-If you want to contribute, suggest improvements and report issues, please go to our [Bitbucket repository](https://bitbucket.org/ipinatti_cit/docker-hub-acquia).
+### [*Issues*](#issues)
+
+If you have problems, bugs, issues with or questions about this, please reach us in [Github issues page](https://github.com/ciandt-dev/docker-hub-php/issues).
+
+__Needless to say__, please do a little research before posting.
+
+### [*Contributing*](#contributing)
+
+We gladly invite you to contribute fixes, new features, or updates, large or small; we are always thrilled to receive pull requests, and do our best to process them as fast as we can.
+
+Before you start to code, we recommend discussing your plans through a GitHub issue, especially for more ambitious contributions. This gives other contributors a chance to point you in the right direction, give you feedback on your design, and help you find out if someone else is working on the same thing.
+
+### [*Documentation*](#documentation)
+
+There are __two parts__ of the documentation.
+
+First, in the master branch, is this README.MD. It explains how this little scripts framework work and it is published on [Github page](https://github.com/ciandt-dev/docker-hub-php).
+
+Second, in each image version there is an additional README.MD file that explains how to use that specific Docker image version itself. __*Latest version*__ is always the one seen on [Docker Hub page](https://hub.docker.com/r/ciandtsoftware/php).
+
+We strongly encourage reading both!
 
 * * *
-
-Please feel free to drop a message in the comments section.
 
 Happy coding, enjoy!!
 
 "We develop people before we develop software" - Cesar Gon, CEO
-
-* * *
