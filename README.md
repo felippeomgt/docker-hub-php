@@ -20,7 +20,7 @@ These images will have the following name pattern: __acquia-*YYYY-MM-DD*__
 
 These are the currently software versions bundled in the image(s) by tag.
 
-* acquia-2016-11-14
+* acquia-latest __OR__ acquia-2016-11-30
   * Ubuntu 12.04.5
   * Apache 2.2.22
   * PHP 5.6.24 (plus extensions)
@@ -48,6 +48,11 @@ These are the currently software versions bundled in the image(s) by tag.
       * Bundler 1.13.6
       * Compass 1.0.3
 
+__*Deprecated*__
+
+* acquia-2016-11-25
+* acquia-2016-11-14
+
 * * *
 
 # [Requirements](#requirements)
@@ -68,7 +73,7 @@ And also, before proceeding please check the __required__ packages below:
 __*Clone the desired project code version*__
 
 ```
-DESIRED_VERSION="acquia-2016-11-14"
+DESIRED_VERSION="acquia-latest"
 
 git clone \
   --branch "${DESIRED_VERSION}" \
@@ -276,7 +281,7 @@ Just to give an quick example, you can create your own Docker image based on thi
 A Dockerfile performing it could be like:
 
 ```
-FROM ciandtsoftware/php:acquia-2016-11-14
+FROM ciandtsoftware/php:acquia-latest
 
 # installs required package
 RUN apt-get update \
@@ -319,7 +324,7 @@ First, in the master branch, is this README.MD. It explains how this little scri
 
 Second, in each image version there is an additional README.MD file that explains how to use that specific Docker image version itself. __*Latest version*__ is always the one seen on [Docker Hub page](https://hub.docker.com/r/ciandtsoftware/php).
 
-We strongly encourage reading it too!
+We strongly encourage reading both!
 
 * * *
 
