@@ -439,7 +439,7 @@ RUN sed --in-place \
         /etc/apache2/conf.d/php-cgi.conf
 
 # create a simple test page
-RUN echo '<?php phpinfo(); ?>' > /var/www/test.php
+RUN echo '<?php phpinfo(); ?>' > /var/www/html/docroot/info.php
 
 # create GFS folder like Acquia in order of mounting files
 RUN mkdir --parents /mnt/gfs
