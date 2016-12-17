@@ -60,7 +60,7 @@ __*Deprecated*__
 __*Download the image*__
 
 ```
-docker pull ciandtsoftware/php:acquia-latest
+docker pull ciandt/php:acquia-latest
 ```
 
 __*Run a container*__
@@ -69,7 +69,7 @@ __*Run a container*__
 docker run \
   --name myContainer \
   --detach \
-  ciandtsoftware/php:acquia-latest
+  ciandt/php:acquia-latest
 ```
 
 __*Check running containers*__
@@ -89,7 +89,7 @@ If you just need the container there is a snippet that can help running in stand
 HOST_CODE_FOLDER=""${HOME}"/workspace/mySite"
 HOST_FILES_FOLDER=""${HOME}"/workspace/myNFSstorage"
 DOCKER_CONTAINER_NAME="myContainer"
-DOCKER_IMAGE="ciandtsoftware/php:acquia-latest"
+DOCKER_IMAGE="ciandt/php:acquia-latest"
 
 # run your container
 docker run \
@@ -141,7 +141,7 @@ All scripts are located inside folder __/root/ciandt__ and must be declared in t
 Just to give an quick example, you can create your own Docker image based on this one that already ships Drush installed as well. A Dockerfile performing it could be like:
 
 ```
-FROM ciandtsoftware/php:acquia-latest
+FROM ciandt/php:acquia-latest
 
 # installs required package
 RUN apt-get update \
@@ -181,7 +181,7 @@ VIRTUAL_HOST=mySite.local
 ##### [__app/php/Dockerfile__](#dockerfile)
 
 ```
-FROM ciandtsoftware/php:acquia-latest
+FROM ciandt/php:acquia-latest
 
 # installs required package
 RUN apt-get update \
@@ -265,7 +265,7 @@ There are __two parts__ of the documentation.
 
 First, in the master branch, is this README.MD. It explains how this little scripts framework work and it is published on [Github page](https://github.com/ciandt-dev/docker-hub-php).
 
-Second, in each image version there is an additional README.MD file that explains how to use that specific Docker image version itself. __*Latest version*__ is always the one seen on [Docker Hub page](https://hub.docker.com/r/ciandtsoftware/php).
+Second, in each image version there is an additional README.MD file that explains how to use that specific Docker image version itself. __*Latest version*__ is always the one seen on [Docker Hub page](https://hub.docker.com/r/ciandt/php).
 
 We strongly encourage reading both!
 
