@@ -29,7 +29,14 @@ cd /tmp/composer
 "${PHP}" -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 
 # check downloaded Composer installer \
-"${PHP}" -r "if (hash_file('SHA384', 'composer-setup.php') === 'aa96f26c2b67226a324c27919f1eb05f21c248b987e6195cad9690d5c1ff713d53020a02ac8c217dbf90a7eacc9d141d') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+_EXPECTED_SIGNATURE=$(curl https://composer.github.io/installer.sig)
+_ACTUAL_SIGNATURE=$(php -r "echo hash_file('SHA384', 'composer-setup.php');")
+if [ "${_EXPECTED_SIGNATURE}" != "${_ACTUAL_SIGNATURE}" ]
+then
+    >&2 echo 'ERROR: Invalid installer signature'
+    rm composer-setup.php
+    exit 1
+fi
 
 # install Composer \
 "${PHP}" composer-setup.php --version "${_COMPOSER_VERSION}"
