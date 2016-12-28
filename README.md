@@ -274,7 +274,7 @@ Scripts are composed by two parts;
 
 The *script-name*__.env__ contains the variables that *script-name*__.sh__ requires to perform its task.
 
-All scripts are located inside folder __/root/ciandt__ and must be declared in the *__Makefile__*. Thus, it is easy to run any of them and have its dependency resolved.
+All scripts are located inside folder __/root/ciandt__ and must be declared in the *__Makefile__*. Thus, it is easy to run any of them and have its dependency resolved. Please check the section in app/scripts/*__Makefile__* of the correspondent script to see if there is any other dependency that needs to declare additional environment variables.
 
 Just to give an quick example, you can create your own Docker image based on this one that already ships Drush installed as well.
 
@@ -290,7 +290,8 @@ RUN apt-get update \
                 --assume-yes \
                 make
 
-# defines Drush version
+# defines Composer and Drush versions
+ENV COMPOSER_VERSION 1.2.1
 ENV DRUSH_VERSION 8.1.3
 
 # installs Drush
