@@ -23,20 +23,21 @@ These are the currently software versions bundled in the image(s) by tag.
 * acquia-latest __OR__ acquia-2016-11-30
   * Ubuntu 12.04.5
   * Apache 2.2.22
-  * PHP 5.6.24 (plus extensions)
+  * PHP 5.6.28 (plus extensions)
     * Gnupg 1.4.0
-    * HTTP 2.5.5
+    * HTTP 2.5.6
     * Igbinary 1.2.1
-    * Imagick 3.3.0
+    * Imagick 3.4.3RC1
     * Memcache 3.0.8
-    * Mongo 1.6.12
+    * Mongo 1.6.14
     * Oauth 1.2.3
     * Propro 1.0.2
     * Raphf 1.1.2
-    * SSH2 BETA
+    * SSH2 0.12
     * Upload Progress 1.0.3.1
     * Xdebug 2.4.1
-    * Xhprof beta
+    * Xhprof 0.9.4
+    * YAML 1.3.0
   * Dumb-init 1.2.0
   * __Pre-loaded scripts for customization__
     * Composer 1.2.1
