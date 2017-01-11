@@ -336,7 +336,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
     # set PECL in php.ini
     && pecl config-set \
        php_ini \
-       /usr/local/php"${_PHP_MAJOR_VERSION}"/etc/cli/php.ini \
+       /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini \
     # install extensions (3rd party) through PECL, configure its ini files and links
     && pecl install \
        gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
@@ -352,8 +352,8 @@ RUN readonly PHP_DEV_PACKAGES=" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
        xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
     && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
-    && mkdir --parents /usr/local/php5.6/etc/conf.d \
-    && cd /usr/local/php5.6/etc/conf.d \
+    && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
+    && cd /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && echo "extension=gnupg.so" > gnupg.ini \
     && echo "extension=http.so" > http.ini \
     && echo "extension=igbinary.so" > igbinary.ini \
@@ -368,8 +368,8 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo "extension=raphf.so" > raphf.ini \
     && echo "extension=xdebug.so" > xdebug.ini \
     && echo "extension=propro.so" > propro.ini \
+    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
     && echo "extension=yaml.so" > yaml.ini \
-    && echo "zend_extension=/usr/local/php${_PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
         > ${PHP_CONF} \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
     && ln --force --symbolic \
