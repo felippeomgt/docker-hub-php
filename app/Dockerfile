@@ -353,6 +353,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
        uploadprogress-"${PHP_EXTENSION_UPLOADPROGRESS_VERSION}" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
        xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
+       yaml-"${PHP_EXTENSION_YAML_VERSION}" \
     && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && cd /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
