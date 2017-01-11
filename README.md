@@ -24,6 +24,7 @@ These are the currently software versions bundled in the image(s) by tag.
   * Ubuntu 12.04.5
   * Apache 2.2.22
   * PHP 5.6.24 (plus extensions)
+    * APCu 4.0.10
     * Gnupg 1.4.0
     * HTTP 2.5.5
     * Igbinary 1.2.1
