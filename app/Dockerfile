@@ -349,32 +349,27 @@ RUN readonly PHP_DEV_PACKAGES=" \
        uploadprogress-"${PHP_EXTENSION_UPLOADPROGRESS_VERSION}" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
        xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
-    && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
     && mkdir --parents /usr/local/php5.6/etc/conf.d \
     && cd /usr/local/php5.6/etc/conf.d \
     && echo "extension=gnupg.so" > gnupg.ini \
-    && echo "extension=http.so" > http.ini \
     && echo "extension=igbinary.so" > igbinary.ini \
     && echo "extension=imagick.so" > imagick.ini \
     && echo "extension=memcache.so" > memcache.ini \
     && echo "extension=mongo.so" > mongo.ini \
     && echo "extension=oauth.so" > oauth.ini \
     && echo "extension=oauth.so" > oauth.ini \
+    && echo "extension=propro.so" > propro.ini \
+    && echo "extension=raphf.so" > raphf.ini \
     && echo "extension=ssh2.so" > ssh2.ini \
     && echo "extension=uploadprogress.so" > uploadprogress.ini \
-    && echo "extension=xhprof.so" > xhprof.ini \
-    && echo "extension=raphf.so" > raphf.ini \
     && echo "extension=xdebug.so" > xdebug.ini \
-    && echo "extension=propro.so" > propro.ini \
+    && echo "extension=xhprof.so" > xhprof.ini \
     && echo "zend_extension=/usr/local/php${_PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
         > ${PHP_CONF} \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/igbinary.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/igbinary.ini \
@@ -408,6 +403,12 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xhprof.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xhprof.ini \
+    # pecl_http is dependent of raphf and it needs to be installed later
+    && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
+    && echo "extension=http.so" > http.ini \
+    && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini \
     # remove DEV packages
     && apt-get remove \
                 --purge \
