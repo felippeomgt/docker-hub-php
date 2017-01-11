@@ -364,10 +364,21 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo "extension=uploadprogress.so" > uploadprogress.ini \
     && echo "extension=xhprof.so" > xhprof.ini \
     && echo "extension=raphf.so" > raphf.ini \
-    && echo "extension=xdebug.so" > xdebug.ini \
     && echo "extension=propro.so" > propro.ini \
-    && echo "zend_extension=/usr/local/php${_PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
-        > ${PHP_CONF} \
+    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
+        > xdebug.ini \
+    # modify xdebug options
+    && echo "xdebug.auto_trace=On" >> xdebug.ini \
+    && echo "xdebug.remote_autostart=On" >> xdebug.ini \
+    && echo "xdebug.remote_enable=On" >> xdebug.ini \
+    && echo "xdebug.default_enable=On" >> xdebug.ini \
+    && echo "xdebug.remote_connect_back=On" >> xdebug.ini \
+    && echo "xdebug.remote_port=9000" >> xdebug.ini \
+    && echo "xdebug.remote_handler=dbgp" >> xdebug.ini \
+    && echo "xdebug.remote_mode=req" >> xdebug.ini \
+    && echo "xdebug.var_display_max_data=2048" >> xdebug.ini \
+    && echo "xdebug.var_display_max_depth=128" >> xdebug.ini \
+    && echo "xdebug.max_nesting_level=500" >> xdebug.ini \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
