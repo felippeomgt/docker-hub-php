@@ -125,6 +125,7 @@ RUN service apache2 start \
 ENV PHP_MAJOR_VERSION 5.6
 ENV PHP_MINOR_VERSION 28
 ENV PHP_VERSION ${PHP_MAJOR_VERSION}.${PHP_MINOR_VERSION}
+ENV PHP_EXTENSION_APCU_VERSION 4.0.10
 ENV PHP_EXTENSION_GNUPG_VERSION 1.4.0
 ENV PHP_EXTENSION_HTTP_VERSION 2.5.6
 ENV PHP_EXTENSION_IGBINARY_VERSION 1.2.1
@@ -339,6 +340,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
        /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini \
     # install extensions (3rd party) through PECL, configure its ini files and links
     && pecl install \
+       apcu-"${PHP_EXTENSION_APCU_VERSION}" \
        gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
        igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
        imagick-"${PHP_EXTENSION_IMAGICK_VERSION}" \
@@ -354,6 +356,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && cd /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
+    && echo "extension=apcu.so" > apcu.ini \
     && echo "extension=gnupg.so" > gnupg.ini \
     && echo "extension=http.so" > http.ini \
     && echo "extension=igbinary.so" > igbinary.ini \
@@ -368,10 +371,15 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo "extension=raphf.so" > raphf.ini \
     && echo "extension=xdebug.so" > xdebug.ini \
     && echo "extension=propro.so" > propro.ini \
+    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/opcache.so" \
+       > opcache.ini \
     && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
     && echo "extension=yaml.so" > yaml.ini \
         > ${PHP_CONF} \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
+    && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/apcu.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini \
@@ -393,6 +401,9 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini \
+    && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/opcache.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/opcache.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/propro.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/propro.ini \
