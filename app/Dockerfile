@@ -123,21 +123,23 @@ RUN service apache2 start \
 ## PHP 5
 # environment variables
 ENV PHP_MAJOR_VERSION 5.6
-ENV PHP_MINOR_VERSION 24
+ENV PHP_MINOR_VERSION 28
 ENV PHP_VERSION ${PHP_MAJOR_VERSION}.${PHP_MINOR_VERSION}
+ENV PHP_EXTENSION_APCU_VERSION 4.0.10
 ENV PHP_EXTENSION_GNUPG_VERSION 1.4.0
-ENV PHP_EXTENSION_HTTP_VERSION 2.5.5
+ENV PHP_EXTENSION_HTTP_VERSION 2.5.6
 ENV PHP_EXTENSION_IGBINARY_VERSION 1.2.1
-ENV PHP_EXTENSION_IMAGICK_VERSION 3.3.0
+ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.3RC1
 ENV PHP_EXTENSION_MEMCACHE_VERSION 3.0.8
-ENV PHP_EXTENSION_MONGO_VERSION 1.6.12
+ENV PHP_EXTENSION_MONGO_VERSION 1.6.14
 ENV PHP_EXTENSION_OAUTH_VERSION 1.2.3
 ENV PHP_EXTENSION_PROPRO_VERSION 1.0.2
 ENV PHP_EXTENSION_RAPHF_VERSION 1.1.2
-ENV PHP_EXTENSION_SSH2_VERSION BETA
+ENV PHP_EXTENSION_SSH2_VERSION 0.12
 ENV PHP_EXTENSION_UPLOADPROGRESS_VERSION 1.0.3.1
 ENV PHP_EXTENSION_XDEBUG_VERSION 2.4.1
-ENV PHP_EXTENSION_XHPROF_VERSION BETA
+ENV PHP_EXTENSION_XHPROF_VERSION 0.9.4
+ENV PHP_EXTENSION_YAML_VERSION 1.3.0
 
 # required packages
 RUN readonly PHP_DEV_PACKAGES=" \
@@ -172,6 +174,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libgpgme11-dev \
       libmagickwand-dev \
       libxslt1-dev \
+      libyaml-dev \
       " \
     && readonly PHP_PACKAGES=" \
                   autoconf \
@@ -334,9 +337,10 @@ RUN readonly PHP_DEV_PACKAGES=" \
     # set PECL in php.ini
     && pecl config-set \
        php_ini \
-       /usr/local/php"${_PHP_MAJOR_VERSION}"/etc/cli/php.ini \
+       /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini \
     # install extensions (3rd party) through PECL, configure its ini files and links
     && pecl install \
+       apcu-"${PHP_EXTENSION_APCU_VERSION}" \
        gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
        igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
        imagick-"${PHP_EXTENSION_IMAGICK_VERSION}" \
@@ -349,22 +353,26 @@ RUN readonly PHP_DEV_PACKAGES=" \
        uploadprogress-"${PHP_EXTENSION_UPLOADPROGRESS_VERSION}" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
        xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
+       yaml-"${PHP_EXTENSION_YAML_VERSION}" \
     && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
-    && mkdir --parents /usr/local/php5.6/etc/conf.d \
-    && cd /usr/local/php5.6/etc/conf.d \
+    && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
+    && cd /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
+    && echo "extension=apcu.so" > apcu.ini \
     && echo "extension=gnupg.so" > gnupg.ini \
-    && echo "extension=http.so" > http.ini \
     && echo "extension=igbinary.so" > igbinary.ini \
     && echo "extension=imagick.so" > imagick.ini \
     && echo "extension=memcache.so" > memcache.ini \
     && echo "extension=mongo.so" > mongo.ini \
     && echo "extension=oauth.so" > oauth.ini \
     && echo "extension=oauth.so" > oauth.ini \
+    && echo "extension=propro.so" > propro.ini \
+    && echo "extension=raphf.so" > raphf.ini \
     && echo "extension=ssh2.so" > ssh2.ini \
     && echo "extension=uploadprogress.so" > uploadprogress.ini \
     && echo "extension=xhprof.so" > xhprof.ini \
-    && echo "extension=raphf.so" > raphf.ini \
-    && echo "extension=propro.so" > propro.ini \
+    && echo "extension=yaml.so" > yaml.ini \
+    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/opcache.so" \
+       > opcache.ini \
     && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
         > xdebug.ini \
     # modify xdebug options
@@ -381,11 +389,11 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo "xdebug.max_nesting_level=500" >> xdebug.ini \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
     && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/apcu.ini \
+    && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/igbinary.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/igbinary.ini \
@@ -401,6 +409,9 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini \
+    && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/opcache.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/opcache.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/propro.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/propro.ini \
@@ -419,6 +430,15 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xhprof.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xhprof.ini \
+    # pecl_http is dependent of raphf and it needs to be installed later
+    && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
+    && echo "extension=http.so" > http.ini \
+    && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini \
+    && ln --force --symbolic \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/yaml.ini \
+       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/yaml.ini \
     # remove DEV packages
     && apt-get remove \
                 --purge \
