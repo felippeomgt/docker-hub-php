@@ -376,7 +376,6 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
         > xdebug.ini \
     # modify xdebug options
-    && echo "xdebug.auto_trace=On" >> xdebug.ini \
     && echo "xdebug.remote_autostart=On" >> xdebug.ini \
     && echo "xdebug.remote_enable=On" >> xdebug.ini \
     && echo "xdebug.default_enable=On" >> xdebug.ini \
