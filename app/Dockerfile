@@ -1,4 +1,4 @@
-FROM ubuntu:12.04.5
+FROM ubuntu:16.04
 
 # define Docker image label information
 LABEL com.ciandt.vendor="CI&T Software SA" \
@@ -39,14 +39,13 @@ RUN readonly UBUNTU_PACKAGES=" \
 
 ## Apache2
 # environment variables
-ENV APACHE2_MAJOR_VERSION 2.2
-ENV APACHE2_MINOR_VERSION 22
+ENV APACHE2_MAJOR_VERSION 2.4
+ENV APACHE2_MINOR_VERSION 18
 ENV APACHE2_VERSION ${APACHE2_MAJOR_VERSION}.${APACHE2_MINOR_VERSION}
 
 # declare required packages
 RUN readonly APACHE2_PACKAGES=" \
               apache2=${APACHE2_VERSION}-* \
-              apache2-mpm-prefork \
               libapache2-mod-xsendfile \
               libapache2-mod-fcgid \
               libapache2-mod-passenger \
@@ -62,15 +61,21 @@ RUN readonly APACHE2_PACKAGES=" \
     && apt-get clean
 
 # disable modules
+# Apache 2.4 comes with mpm_event enabled by default. We'll switch that for mpm_prefork.
+# Reference: https://serverfault.com/questions/383526/how-do-i-select-which-apache-mpm-to-use
 RUN readonly APACHE2_MODULES_TO_DISABLE=" \
               autoindex \
-              cgid \
+              mpm_event \
               " \
-    && a2dismod ${APACHE2_MODULES_TO_DISABLE} \
+    # Force disabling apache modules that might be considered "essential" such
+    # autoindex.
+    && a2dismod --force ${APACHE2_MODULES_TO_DISABLE} \
     # enable modules
     && readonly APACHE2_MODULES_TO_ENABLE=" \
               actions \
               expires \
+              cgi \
+              cgid \
               fastcgi \
               fcgid \
               headers \
@@ -80,12 +85,13 @@ RUN readonly APACHE2_MODULES_TO_DISABLE=" \
               suexec \
               vhost_alias \
               xsendfile \
+              mpm_prefork \
               " \
     && a2enmod ${APACHE2_MODULES_TO_ENABLE}
 
 # if exists X-Forwarded-Proto in header set HTTPS=on
 RUN echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" > \
-      /etc/apache2/conf.d/https-forward-flag.conf
+      /etc/apache2/conf-available/https-forward-flag.conf
 
 # tweak conf
 RUN readonly APACHE2_CONF_FILE="/etc/apache2/apache2.conf" \
@@ -105,11 +111,11 @@ RUN readonly APACHE2_CONF_FILE="/etc/apache2/apache2.conf" \
 RUN mkdir --parents /var/www/html/docroot
 
 # create conf file to accept any site
-COPY apache2/any-site \
-     /etc/apache2/sites-available/any-site
+COPY apache2/any-site.conf \
+     /etc/apache2/sites-available/any-site.conf
 
 # disable default site - enable any-site
-RUN a2dissite default \
+RUN a2dissite 000-default \
     && a2ensite any-site
 
 # create run foreground script
@@ -123,22 +129,22 @@ RUN service apache2 start \
 ## PHP 5
 # environment variables
 ENV PHP_MAJOR_VERSION 5.6
-ENV PHP_MINOR_VERSION 28
+ENV PHP_MINOR_VERSION 30
 ENV PHP_VERSION ${PHP_MAJOR_VERSION}.${PHP_MINOR_VERSION}
-ENV PHP_EXTENSION_APCU_VERSION 4.0.10
+ENV PHP_EXTENSION_APCU_VERSION 4.0.11
 ENV PHP_EXTENSION_GNUPG_VERSION 1.4.0
 ENV PHP_EXTENSION_HTTP_VERSION 2.5.6
 ENV PHP_EXTENSION_IGBINARY_VERSION 1.2.1
-ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.3RC1
+ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.3
 ENV PHP_EXTENSION_MEMCACHE_VERSION 3.0.8
 ENV PHP_EXTENSION_MONGO_VERSION 1.6.14
 ENV PHP_EXTENSION_OAUTH_VERSION 1.2.3
 ENV PHP_EXTENSION_PROPRO_VERSION 1.0.2
 ENV PHP_EXTENSION_RAPHF_VERSION 1.1.2
-ENV PHP_EXTENSION_SSH2_VERSION 0.12
+ENV PHP_EXTENSION_SSH2_VERSION 0.13
 ENV PHP_EXTENSION_UPLOADPROGRESS_VERSION 1.0.3.1
 ENV PHP_EXTENSION_XDEBUG_VERSION 2.4.1
-ENV PHP_EXTENSION_XHPROF_VERSION 0.9.4
+ENV PHP_EXTENSION_XHPROF_VERSION 0.9.2
 ENV PHP_EXTENSION_YAML_VERSION 1.3.0
 
 # required packages
@@ -146,17 +152,17 @@ RUN readonly PHP_DEV_PACKAGES=" \
       make \
       gcc \
       pkg-config \
-      apache2-prefork-dev \
+      apache2-dev \
       libxml2-dev \
       libcurl4-openssl-dev \
       libbz2-dev \
-      libdb4.8-dev \
+      libdb5.3-dev \
       libjpeg-dev \
       libpng12-dev \
       libxpm-dev \
       libfreetype6-dev \
-      postgresql-server-dev-9.1 \
-      libt1-dev \
+      postgresql-server-dev-9.5 \
+      libxfont-dev \
       libgd2-xpm-dev \
       libgmp-dev \
       libmysqlclient-dev \
@@ -175,6 +181,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libmagickwand-dev \
       libxslt1-dev \
       libyaml-dev \
+      libkrb5-dev \
       " \
     && readonly PHP_PACKAGES=" \
                   autoconf \
@@ -187,7 +194,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
                   xml-core \
                   libc-client2007e \
                   libxslt1.1 \
-                  libudev0:i386 \
+                  libudev1 \
                   libdb4.8 \
                   libfreetype6 \
                   unixodbc \
@@ -200,8 +207,12 @@ RUN readonly PHP_DEV_PACKAGES=" \
                 --assume-yes \
                 ${PHP_DEV_PACKAGES} \
                 ${PHP_PACKAGES} \
-    # create temp folder
-    && mkdir --parents /tmp/php/src/${PHP_VERSION} \
+    # remove apt cache in order to improve Docker image size
+    && apt-get clean
+
+# STEP: download php sources
+# create temp folder
+RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
     # donwload
     && cd /tmp/php/src/${PHP_VERSION} \
     && curl --silent \
@@ -218,72 +229,81 @@ RUN readonly PHP_DEV_PACKAGES=" \
           --symbolic \
           /usr/lib/libc-client.a \
           /usr/lib/x86_64-linux-gnu/libc-client.a \
-    # configure
-    && cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
+    && ln --force \
+          --symbolic \
+          /usr/include/x86_64-linux-gnu/gmp.h \
+          /usr/include/gmp.h
+
+# STEP: compile PHP from sources
+# configure
+RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
     && ./configure \
-          --enable-cli \
-          --with-config-file-path=/usr/local/php${PHP_MAJOR_VERSION}/etc/cli \
-          --with-config-file-scan-dir=/usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
-          --prefix=/usr/local/php${PHP_MAJOR_VERSION} \
-          --enable-bcmath \
-          --with-gmp \
-          --with-bz2=/usr \
-          --enable-calendar \
-          --with-curl \
-          --enable-dba \
-          --with-db4 \
-          --enable-exif \
-          --with-gd \
-          --with-jpeg-dir=/usr/lib \
-          --with-png-dir=/usr/lib \
-          --with-freetype-dir=/usr \
-          --enable-ftp \
-          --with-gettext \
-          #--with-imap \
-          --with-kerberos \
-          --with-imap-ssl \
-          --enable-inline-optimization \
-          --with-ldap \
-          --with-ldap-sasl \
-          --with-openssl=/usr \
-          --enable-mbstring \
-          --enable-mbregex \
-          --with-mcrypt \
-          --with-mhash \
-          --with-mssql \
-          --with-mysql \
-          --with-mysql-sock=/var/run/mysqld/mysqld.sock \
-          --with-mysqli=/usr/bin/mysql_config \
-          --enable-pcntl \
-          --with-pcre-regex \
-          --with-pgsql \
-          --with-pdo-mysql \
-          --with-pdo-pgsql \
-          --with-pdo-dblib \
-          --with-pspell=/usr \
-          --with-readline \
-          --enable-shmop \
-          --enable-soap \
-          --enable-sockets \
-          --enable-sysvsem \
-          --enable-sysvshm \
-          --enable-sysvmsg \
-          --with-tidy \
-          --with-t1lib=/usr \
-          --enable-wddx \
-          --enable-xml \
-          --with-xmlrpc \
-          --with-xsl \
-          --with-xpm-dir=/usr \
-          --enable-zip \
-          --with-zlib \
-          --with-libdir=/lib/x86_64-linux-gnu \
-          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
-          CXXFLAGS=-fno-omit-frame-pointer \
-          --with-apxs2=/usr/bin/apxs2 \
-    # compile
-    && make \
-    # install
+         --enable-fpm \
+         --enable-cli \
+         --with-config-file-path=/usr/local/php5.6/etc/cli \
+         --with-config-file-scan-dir=/usr/local/php5.6/etc/cli/conf.d \
+         --prefix=/usr/local/php5.6 \
+         --enable-bcmath \
+         --with-gmp \
+         --with-bz2=/usr \
+         --enable-calendar \
+         --with-curl \
+         --enable-dba \
+         --with-db4 \
+         --enable-exif \
+         --with-gd \
+         --with-jpeg-dir=/usr/lib \
+         --with-png-dir=/usr/lib \
+         --with-freetype-dir=/usr \
+         --enable-ftp \
+         --with-gettext \
+         --with-imap \
+         --with-kerberos \
+         --with-imap-ssl \
+         --enable-inline-optimization \
+         --with-ldap \
+         --with-ldap-sasl \
+         --with-openssl=/usr \
+         --enable-mbstring \
+         --enable-mbregex \
+         --with-mcrypt \
+         --with-mhash \
+         --with-mssql \
+         --with-mysql \
+         --with-mysql-sock=/var/run/mysqld/mysqld.sock \
+         --with-mysqli=/usr/bin/mysql_config \
+         --enable-pcntl \
+         --with-pcre-regex \
+         --with-pgsql \
+         --with-pdo-mysql \
+         --with-pdo-pgsql \
+         --with-pdo-dblib \
+         --with-pspell=/usr \
+         --with-readline \
+         --enable-shmop \
+         --enable-soap \
+         --enable-sockets \
+         --enable-sysvsem \
+         --enable-sysvshm \
+         --enable-sysvmsg \
+         --with-tidy \
+         --enable-wddx \
+         --enable-xml \
+         --with-xmlrpc \
+         --with-xsl \
+         --with-xpm-dir=/usr \
+         --enable-zip \
+         --with-zlib \
+         --with-libdir=/lib/x86_64-linux-gnu \
+         CFLAGS="-g -O2 -fno-omit-frame-pointer" \
+         CXXFLAGS="-fno-omit-frame-pointer"
+
+# compile
+RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
+    && make -j$(nproc)
+
+# install
+RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
     && make install \
     # create CLI folder and copy php.ini
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli \
@@ -339,7 +359,8 @@ RUN readonly PHP_DEV_PACKAGES=" \
        php_ini \
        /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini \
     # install extensions (3rd party) through PECL, configure its ini files and links
-    && pecl install \
+    # avoid issues with memcache extension: https://bugs.php.net/bug.php?id=66230
+    && CFLAGS="-fgnu89-inline" pecl install \
        apcu-"${PHP_EXTENSION_APCU_VERSION}" \
        gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
        igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
@@ -354,8 +375,10 @@ RUN readonly PHP_DEV_PACKAGES=" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
        xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
        yaml-"${PHP_EXTENSION_YAML_VERSION}" \
-    && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
-    && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
+    && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}"
+
+# php configuration files
+RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && cd /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && echo "extension=apcu.so" > apcu.ini \
     && echo "extension=gnupg.so" > gnupg.ini \
@@ -376,9 +399,9 @@ RUN readonly PHP_DEV_PACKAGES=" \
     && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
         > xdebug.ini \
     # modify xdebug options
-    && echo "xdebug.remote_autostart=On" >> xdebug.ini \
+    # && echo "xdebug.remote_autostart=On" >> xdebug.ini \
     && echo "xdebug.remote_enable=On" >> xdebug.ini \
-    && echo "xdebug.default_enable=On" >> xdebug.ini \
+    # && echo "xdebug.default_enable=On" >> xdebug.ini \
     && echo "xdebug.remote_connect_back=On" >> xdebug.ini \
     && echo "xdebug.remote_port=9000" >> xdebug.ini \
     && echo "xdebug.remote_handler=dbgp" >> xdebug.ini \
@@ -439,12 +462,17 @@ RUN readonly PHP_DEV_PACKAGES=" \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/yaml.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/yaml.ini \
     # remove DEV packages
-    && apt-get remove \
+    && apt-get autoremove \
                 --purge \
                 --assume-yes \
                 ${PHP_DEV_PACKAGES} \
     # remove apt cache in order to improve Docker image size
     && apt-get clean
+
+# RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/fpm/ \
+#        && ln --force --symbolic \
+#        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ \
+#        /usr/local/php${PHP_MAJOR_VERSION}/etc/fpm/conf.d/ \
 
 # set PHP cgi script
 COPY php/php-cgi.sh \
@@ -459,14 +487,17 @@ RUN sed --in-place \
 
 # configure PHP cgi
 COPY php/php-cgi.conf \
-    /etc/apache2/conf.d/php-cgi.conf
+    /etc/apache2/conf-available/php-cgi.conf
 
 # change placeholder
 RUN sed --in-place \
         --regexp-extended \
         --expression \
           "s/<PHP_MAJOR_VERSION_PLACEHOLDER>/${PHP_MAJOR_VERSION}/g" \
-        /etc/apache2/conf.d/php-cgi.conf
+        /etc/apache2/conf-available/php-cgi.conf
+
+# enable apache php-cgi conf
+RUN a2enconf php-cgi
 
 # create a simple test page
 RUN echo '<?php phpinfo(); ?>' > /var/www/html/docroot/info.php
