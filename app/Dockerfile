@@ -137,6 +137,7 @@ ENV PHP_EXTENSION_HTTP_VERSION 2.5.6
 ENV PHP_EXTENSION_IGBINARY_VERSION 1.2.1
 ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.3
 ENV PHP_EXTENSION_MEMCACHE_VERSION 3.0.8
+ENV PHP_EXTENSION_MEMCACHED_VERSION 2.2.0
 ENV PHP_EXTENSION_MONGO_VERSION 1.6.14
 ENV PHP_EXTENSION_OAUTH_VERSION 1.2.3
 ENV PHP_EXTENSION_PROPRO_VERSION 1.0.2
@@ -232,11 +233,9 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
     && ln --force \
           --symbolic \
           /usr/include/x86_64-linux-gnu/gmp.h \
-          /usr/include/gmp.h
-
-# STEP: compile PHP from sources
-# configure
-RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
+          /usr/include/gmp.h \
+    # configure
+    && cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
     && ./configure \
          --enable-fpm \
          --enable-cli \
@@ -296,14 +295,10 @@ RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
          --with-zlib \
          --with-libdir=/lib/x86_64-linux-gnu \
          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
-         CXXFLAGS="-fno-omit-frame-pointer"
-
-# compile
-RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
-    && make -j$(nproc)
-
-# install
-RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
+         CXXFLAGS="-fno-omit-frame-pointer" \
+    # compile
+    && make -j$(nproc) \
+    # install
     && make install \
     # create CLI folder and copy php.ini
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli \
@@ -366,6 +361,7 @@ RUN cd /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION} \
        igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
        imagick-"${PHP_EXTENSION_IMAGICK_VERSION}" \
        memcache-"${PHP_EXTENSION_MEMCACHE_VERSION}" \
+       memcached-"${PHP_EXTENSION_MEMCACHED_VERSION}" \
        mongo-"${PHP_EXTENSION_MONGO_VERSION}" \
        OAuth-"${PHP_EXTENSION_OAUTH_VERSION}" \
        propro-"${PHP_EXTENSION_PROPRO_VERSION}" \
