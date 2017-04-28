@@ -469,11 +469,6 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     # remove apt cache in order to improve Docker image size
     && apt-get clean
 
-# RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/fpm/ \
-#        && ln --force --symbolic \
-#        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ \
-#        /usr/local/php${PHP_MAJOR_VERSION}/etc/fpm/conf.d/ \
-
 # set PHP cgi script
 COPY php/php-cgi.sh \
     /usr/lib/cgi-bin/php${PHP_MAJOR_VERSION}-cgi
