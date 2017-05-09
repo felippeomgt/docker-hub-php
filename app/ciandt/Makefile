@@ -23,3 +23,7 @@ install-nodejs:
 # install Grunt
 install-grunt: install-nodejs
 	/root/ciandt/grunt/install-grunt.sh
+
+# install and configure NFS
+configure-nfs:
+	/root/ciandt/nfs/configure-nfs.sh
