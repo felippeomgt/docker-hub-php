@@ -91,7 +91,8 @@ RUN readonly APACHE2_MODULES_TO_DISABLE=" \
 
 # if exists X-Forwarded-Proto in header set HTTPS=on
 RUN echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" > \
-      /etc/apache2/conf-available/https-forward-flag.conf
+      /etc/apache2/conf-available/https-forward-flag.conf \
+      && a2enconf https-forward-flag
 
 # tweak conf
 RUN readonly APACHE2_CONF_FILE="/etc/apache2/apache2.conf" \
