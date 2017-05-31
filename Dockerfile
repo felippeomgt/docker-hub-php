@@ -53,7 +53,6 @@ RUN yes | pecl install xdebug
 
 RUN echo "zend_extension=$(find /usr/lib64/php/modules/ -name xdebug.so)" > /etc/php.d/xdebug.ini \
     && echo "[xdebug]" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.auto_trace = On" >> /etc/php.d/xdebug.ini \
     && echo "xdebug.remote_autostart=true" >> /etc/php.d/xdebug.ini \
     && echo "xdebug.remote_enable = On" >> /etc/php.d/xdebug.ini \
     && echo "xdebug.default_enable = On" >> /etc/php.d/xdebug.ini \
