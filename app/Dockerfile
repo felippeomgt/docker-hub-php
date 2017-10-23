@@ -8,23 +8,6 @@ LABEL com.ciandt.vendor="CI&T Software SA" \
 # defines root user, to perform privileged operations
 USER root
 
-# enable apt mirrors (best performance due to use the closest repository)
-RUN readonly APT_SOURCES="/etc/apt/sources.list" \
-    && readonly UBUNTU_RELEASE_NAME="$(cat /etc/lsb-release | grep CODENAME | cut -d '=' -f2)" \
-    && sed --in-place \
-            --regexp-extended \
-            --expression \
-              "1s/^/deb mirror:\/\/mirrors\.ubuntu\.com\/mirrors\.txt "${UBUNTU_RELEASE_NAME}"-security main restricted universe multiverse\n\n/" \
-            --expression \
-              "1s/^/deb mirror:\/\/mirrors\.ubuntu\.com\/mirrors\.txt "${UBUNTU_RELEASE_NAME}"-backports main restricted universe multiverse\n/" \
-            --expression \
-              "1s/^/deb mirror:\/\/mirrors\.ubuntu\.com\/mirrors\.txt "${UBUNTU_RELEASE_NAME}"-updates main restricted universe multiverse\n/" \
-            --expression \
-              "1s/^/deb mirror:\/\/mirrors\.ubuntu\.com\/mirrors\.txt "${UBUNTU_RELEASE_NAME}" main restricted universe multiverse\n/" \
-            --expression \
-              "1s/^/\# Enable Ubuntu mirrors and multiverse\n/" \
-            "${APT_SOURCES}"
-
 # upgrade Ubuntu packages, install security updates and required packages
 RUN readonly UBUNTU_PACKAGES=" \
                 curl \
@@ -46,6 +29,7 @@ ENV APACHE2_VERSION ${APACHE2_MAJOR_VERSION}.${APACHE2_MINOR_VERSION}
 # declare required packages
 RUN readonly APACHE2_PACKAGES=" \
               apache2=${APACHE2_VERSION}-* \
+              apache2-dev \
               libapache2-mod-xsendfile \
               libapache2-mod-fcgid \
               libapache2-mod-passenger \
@@ -68,16 +52,16 @@ RUN readonly APACHE2_MODULES_TO_DISABLE=" \
               mpm_event \
               " \
     # Force disabling apache modules that might be considered "essential" such
-    # autoindex.
+    # as autoindex.
     && a2dismod --force ${APACHE2_MODULES_TO_DISABLE} \
     # enable modules
     && readonly APACHE2_MODULES_TO_ENABLE=" \
               actions \
               expires \
-              cgi \
-              cgid \
+              # cgi \
+              # cgid \
               fastcgi \
-              fcgid \
+              # fcgid \
               headers \
               passenger \
               rewrite \
@@ -153,8 +137,10 @@ ENV PHP_EXTENSION_YAML_VERSION 2.0.2
 RUN readonly PHP_DEV_PACKAGES=" \
       make \
       gcc \
+      build-essential \
       pkg-config \
       apache2-dev \
+      libfcgi-dev \
       libxml2-dev \
       libcurl4-openssl-dev \
       libbz2-dev \
@@ -163,14 +149,14 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libpng12-dev \
       libxpm-dev \
       libfreetype6-dev \
-      postgresql-server-dev-9.5 \
+      # postgresql-server-dev-9.5 \
       libxfont-dev \
       libgd2-xpm-dev \
       libgmp-dev \
       libmysqlclient-dev \
       libsasl2-dev \
       libmhash-dev \
-      unixodbc-dev \
+      # unixodbc-dev \
       freetds-dev \
       libpspell-dev \
       libsnmp-dev \
@@ -198,9 +184,9 @@ RUN readonly PHP_DEV_PACKAGES=" \
                   libc-client2007e \
                   libxslt1.1 \
                   libudev1 \
-                  libdb4.8 \
+                  # libdb4.8 \
                   libfreetype6 \
-                  unixodbc \
+                  # unixodbc \
                   libreadline6 \
                   libssh2-1 \
                   libgpgme11 \
@@ -277,9 +263,9 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-mysqli=/usr/bin/mysql_config \
          --enable-pcntl \
          --with-pcre-regex \
-         --with-pgsql \
+         # --with-pgsql \
          --with-pdo-mysql \
-         --with-pdo-pgsql \
+         # --with-pdo-pgsql \
          --with-pdo-dblib \
          --with-pspell=/usr \
          --with-readline \
@@ -309,7 +295,7 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
     && readonly PHP_CONF="/usr/local/php${PHP_MAJOR_VERSION}/etc/cli/php.ini" \
     && cp /tmp/php/src/${PHP_VERSION}/php-${PHP_VERSION}/php.ini-production \
           ${PHP_CONF} \
-    # set PHP configuration parameters according Aquia environment
+    # set PHP configuration parameters according Acquia environment
     && sed --in-place \
            --regexp-extended \
            --expression \
