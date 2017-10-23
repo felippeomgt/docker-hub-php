@@ -59,9 +59,9 @@ RUN readonly APACHE2_MODULES_TO_DISABLE=" \
               actions \
               expires \
               # cgi \
-              # cgid \
+              cgid \
               fastcgi \
-              # fcgid \
+              fcgid \
               headers \
               passenger \
               rewrite \
@@ -380,9 +380,9 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     # && echo "extension=uploadprogress.so" > uploadprogress.ini \
     # && echo "extension=xhprof.so" > xhprof.ini \
     && echo "extension=yaml.so" > yaml.ini \
-    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/opcache.so" \
+    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20160303/opcache.so" \
        > opcache.ini \
-    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20131226/xdebug.so" \
+    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20160303/xdebug.so" \
         > xdebug.ini \
     # modify xdebug options
     # && echo "xdebug.remote_autostart=On" >> xdebug.ini \
