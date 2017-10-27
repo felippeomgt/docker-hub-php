@@ -396,7 +396,7 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && echo "xdebug.profiler_enable_trigger=On" >> xdebug.ini \
     && echo "xdebug.var_display_max_data=1024" >> xdebug.ini \
     && echo "xdebug.var_display_max_depth=128" >> xdebug.ini \
-    && echo "xdebug.max_nesting_level=100" >> xdebug.ini \
+    && echo "xdebug.max_nesting_level=256" >> xdebug.ini \
     && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
