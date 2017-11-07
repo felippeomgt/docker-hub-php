@@ -149,7 +149,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libpng12-dev \
       libxpm-dev \
       libfreetype6-dev \
-      # postgresql-server-dev-9.5 \
+      postgresql-server-dev-9.5 \
       libxfont-dev \
       libgd2-xpm-dev \
       libgmp-dev \
@@ -263,9 +263,9 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-mysqli=/usr/bin/mysql_config \
          --enable-pcntl \
          --with-pcre-regex \
-         # --with-pgsql \
+         --with-pgsql \
          --with-pdo-mysql \
-         # --with-pdo-pgsql \
+         --with-pdo-pgsql \
          --with-pdo-dblib \
          --with-pspell=/usr \
          --with-readline \
