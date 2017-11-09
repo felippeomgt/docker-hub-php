@@ -114,14 +114,13 @@ RUN service apache2 start \
 ## PHP
 # environment variables
 ENV PHP_MAJOR_VERSION 7.1
-ENV PHP_MINOR_VERSION 8
+ENV PHP_MINOR_VERSION 10
 ENV PHP_VERSION ${PHP_MAJOR_VERSION}.${PHP_MINOR_VERSION}
 ENV PHP_EXTENSION_APCU_VERSION 5.1.8
 ENV PHP_EXTENSION_GNUPG_VERSION 1.4.0
 ENV PHP_EXTENSION_HTTP_VERSION 3.1.0
 ENV PHP_EXTENSION_IGBINARY_VERSION 2.0.1
 ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.3
-# ENV PHP_EXTENSION_MEMCACHE_VERSION 3.0.3
 ENV PHP_EXTENSION_MEMCACHED_VERSION 3.0.3
 # ENV PHP_EXTENSION_MONGO_VERSION 1.6.14
 ENV PHP_EXTENSION_OAUTH_VERSION 2.0.2
@@ -204,7 +203,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
 # STEP: download php sources
 # create temp folder
 RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
-    # donwload
+    # download
     && cd /tmp/php/src/${PHP_VERSION} \
     && curl --silent \
              --show-error \
@@ -350,16 +349,12 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
        gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
        igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
        imagick-"${PHP_EXTENSION_IMAGICK_VERSION}" \
-       # memcache-"${PHP_EXTENSION_MEMCACHE_VERSION}" \
        memcached-"${PHP_EXTENSION_MEMCACHED_VERSION}" \
-       # mongo-"${PHP_EXTENSION_MONGO_VERSION}" \
        OAuth-"${PHP_EXTENSION_OAUTH_VERSION}" \
        propro-"${PHP_EXTENSION_PROPRO_VERSION}" \
        raphf-"${PHP_EXTENSION_RAPHF_VERSION}" \
        ssh2-"${PHP_EXTENSION_SSH2_VERSION}" \
-       # uploadprogress-"${PHP_EXTENSION_UPLOADPROGRESS_VERSION}" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
-       # xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
        yaml-"${PHP_EXTENSION_YAML_VERSION}"
 
 # php configuration files
@@ -369,25 +364,19 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && echo "extension=gnupg.so" > gnupg.ini \
     && echo "extension=igbinary.so" > igbinary.ini \
     && echo "extension=imagick.so" > imagick.ini \
-    # && echo "extension=memcache.so" > memcache.ini \
     && echo "extension=memcached.so" > memcached.ini \
-    # && echo "extension=mongo.so" > mongo.ini \
     && echo "extension=oauth.so" > oauth.ini \
     && echo "extension=oauth.so" > oauth.ini \
     && echo "extension=propro.so" > propro.ini \
     && echo "extension=raphf.so" > raphf.ini \
     && echo "extension=ssh2.so" > ssh2.ini \
-    # && echo "extension=uploadprogress.so" > uploadprogress.ini \
-    # && echo "extension=xhprof.so" > xhprof.ini \
     && echo "extension=yaml.so" > yaml.ini \
     && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20160303/opcache.so" \
        > opcache.ini \
     && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20160303/xdebug.so" \
         > xdebug.ini \
     # modify xdebug options
-    # && echo "xdebug.remote_autostart=On" >> xdebug.ini \
     && echo "xdebug.remote_enable=On" >> xdebug.ini \
-    # && echo "xdebug.default_enable=On" >> xdebug.ini \
     && echo "xdebug.remote_connect_back=On" >> xdebug.ini \
     && echo "xdebug.remote_port=9000" >> xdebug.ini \
     && echo "xdebug.remote_handler=dbgp" >> xdebug.ini \
@@ -410,15 +399,9 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/imagick.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/imagick.ini \
-    # && ln --force --symbolic \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/memcache.ini \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/memcache.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/memcached.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/memcached.ini \
-    # && ln --force --symbolic \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/mongo.ini \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/mongo.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini \
@@ -434,15 +417,9 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ssh2.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/ssh2.ini \
-    # && ln --force --symbolic \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/uploadprogress.ini \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/uploadprogress.ini \
     && ln --force --symbolic \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xdebug.ini \
        /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xdebug.ini \
-    # && ln --force --symbolic \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xhprof.ini \
-    #    /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xhprof.ini \
     # pecl_http is dependent of raphf and it needs to be installed later
     && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
     && echo "extension=http.so" > http.ini \
