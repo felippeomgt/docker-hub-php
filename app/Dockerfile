@@ -31,7 +31,6 @@ RUN readonly APACHE2_PACKAGES=" \
               apache2=${APACHE2_VERSION}-* \
               apache2-dev \
               libapache2-mod-xsendfile \
-              libapache2-mod-fcgid \
               libapache2-mod-passenger \
               libapache2-mod-fastcgi \
               ssl-cert \
@@ -58,10 +57,7 @@ RUN readonly APACHE2_MODULES_TO_DISABLE=" \
     && readonly APACHE2_MODULES_TO_ENABLE=" \
               actions \
               expires \
-              # cgi \
-              cgid \
-              fastcgi \
-              fcgid \
+              proxy_fcgi \
               headers \
               passenger \
               rewrite \
@@ -139,7 +135,6 @@ RUN readonly PHP_DEV_PACKAGES=" \
       build-essential \
       pkg-config \
       apache2-dev \
-      libfcgi-dev \
       libxml2-dev \
       libcurl4-openssl-dev \
       libbz2-dev \
@@ -437,30 +432,18 @@ RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
     # remove apt cache in order to improve Docker image size
     && apt-get clean
 
-# set PHP cgi script
-COPY php/php-cgi.sh \
-    /usr/lib/cgi-bin/php${PHP_MAJOR_VERSION}-cgi
+# set PHP FPM configuration
+COPY php/www.conf.default \
+     /usr/local/php${PHP_MAJOR_VERSION}/etc/php-fpm.d
 
-# change placeholder
-RUN sed --in-place \
-        --regexp-extended \
-        --expression \
-          "s/<PHP_MAJOR_VERSION_PLACEHOLDER>/${PHP_MAJOR_VERSION}/g" \
-        /usr/lib/cgi-bin/php${PHP_MAJOR_VERSION}-cgi
+# create run foreground script
+COPY php/php-fpm-daemon.sh \
+    /usr/local/bin/php-fpm-daemon.sh
 
-# configure PHP cgi
-COPY php/php-cgi.conf \
-    /etc/apache2/conf-available/php-cgi.conf
-
-# change placeholder
-RUN sed --in-place \
-        --regexp-extended \
-        --expression \
-          "s/<PHP_MAJOR_VERSION_PLACEHOLDER>/${PHP_MAJOR_VERSION}/g" \
-        /etc/apache2/conf-available/php-cgi.conf
-
-# enable apache php-cgi conf
-RUN a2enconf php-cgi
+# symlink to php dir
+RUN ln --force --symbolic \
+    /usr/local/php${PHP_MAJOR_VERSION}/ \
+    /usr/local/php
 
 # create a simple test page
 # RUN echo '<?php phpinfo(); ?>' > /var/www/html/docroot/info.php
@@ -498,9 +481,12 @@ EXPOSE 80 443
 # change workdir to Apache2 folder
 WORKDIR /var/www/html
 
+# copy init script
+COPY init.sh /usr/local/bin
+
 # docker entrypoint/cmd configuration
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["apache2-foreground"]
+CMD ["init.sh"]
 
 ## CI&T
 
