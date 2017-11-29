@@ -142,7 +142,7 @@ ENV PHP_EXTENSION_RAPHF_VERSION 1.1.2
 ENV PHP_EXTENSION_SSH2_VERSION 0.13
 ENV PHP_EXTENSION_UPLOADPROGRESS_VERSION 1.0.3.1
 ENV PHP_EXTENSION_XDEBUG_VERSION 2.4.1
-ENV PHP_EXTENSION_XHPROF_VERSION 0.9.2
+# ENV PHP_EXTENSION_XHPROF_VERSION 0.9.2
 ENV PHP_EXTENSION_YAML_VERSION 1.3.0
 
 # required packages
@@ -177,6 +177,7 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libssh2-1-dev \
       libgpgme11-dev \
       libmagickwand-dev \
+      libmemcached-dev \
       libxslt1-dev \
       libyaml-dev \
       libkrb5-dev \
@@ -366,7 +367,7 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
        ssh2-"${PHP_EXTENSION_SSH2_VERSION}" \
        uploadprogress-"${PHP_EXTENSION_UPLOADPROGRESS_VERSION}" \
        xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
-       xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
+       # xhprof-"${PHP_EXTENSION_XHPROF_VERSION}" \
        yaml-"${PHP_EXTENSION_YAML_VERSION}" \
     && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}"
 
