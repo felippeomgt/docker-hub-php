@@ -1,71 +1,94 @@
 FROM centos:7
 
-RUN rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+# define Docker image label information
+LABEL com.ciandt.vendor="CI&T Software SA" \
+      com.ciandt.maintainers.1="Halison Alan Fernandes - @halisonfernandes"
 
-RUN yum update -y && yum install -y \
-  httpd.x86_64 \
-  php55w-opcache.x86_64 \
-  php55w.x86_64 \
-  php55w-common.x86_64 \
-  php55w-cli.x86_64 \
-  php55w-devel.x86_64 \
-  php55w-gd.x86_64 \
-  php55w-pecl-memcache.x86_64 \
-  php55w-ldap.x86_64 \
-  php55w-mbstring.x86_64 \
-  php55w-mysqlnd.x86_64 \
-  php55w-pgsql.x86_64 \
-  php55w-xml.x86_64 \
-  mod_ssl.x86_64 \
-  wget \
-  lsof \
-  vim \
-  git \
-  gcc \
-  iproute \
-  mysql \
-  openssh-clients.x86_64
+# defines root user, to perform privileged operations
+USER root
 
-# Include virtualhost in Apache Configuration
-RUN echo "NameVirtualHost *:80" >> /etc/httpd/conf/httpd.conf
-RUN echo "Listen 443" >> /etc/httpd/conf/httpd.conf
-RUN echo "NameVirtualHost *:443" >> /etc/httpd/conf/httpd.conf
-RUN mv /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/ssl.conf.bak
-RUN echo "Include /local/apache/conf/*.conf" >> /etc/httpd/conf/httpd.conf
+# environment variables
+ENV APACHE2_MAJOR_VERSION 2.4
+ENV PHP_VERSION 70
 
-# Install Drush
-RUN wget --quiet -O - http://ftp.drupal.org/files/projects/drush-7.x-5.9.tar.gz | tar -zxf - -C /usr/local/share
-RUN ln -s /usr/local/share/drush/drush /usr/local/bin/drush
+# upgrade CentOS packages, install security updates and required packages
+RUN readonly CENTOS_PACKAGES=" \
+                initscripts \
+                systemd \
+                curl \
+                centos-release-scl \
+                " \
+    && yum -y update \
+    && yum -y install \
+                  ${CENTOS_PACKAGES} \
+    # remove apt cache in order to improve Docker image size
+    && yum clean all
 
-RUN mkdir -p /local/apache/conf && \
-    mkdir -p /local/apache/keys && \
-    mkdir -p /local/apache/logs
+# Apache
+# required packages
+RUN readonly APACHE_PACKAGES=" \
+      httpd24 \
+      mod_ssl \
+      " \ 
+    && yum-config-manager --enable rhel-server-rhscl-7-rpms \
+    && yum -y install \
+                ${APACHE_PACKAGES} \
+    # remove apt cache in order to improve Docker image size
+    && yum clean all
 
-COPY apache/conf/* /local/apache/conf/
-COPY apache/keys/* /local/apache/keys/
+# PHP
+# required packages
+RUN readonly PHP_PACKAGES=" \
+      rh-php${PHP_VERSION} \
+      rh-php${PHP_VERSION}-php \
+      rh-php${PHP_VERSION}-php-fpm \
+      rh-php${PHP_VERSION}-php-cli \
+      rh-php${PHP_VERSION}-php-mysqlnd \
+      rh-php${PHP_VERSION}-php-pgsql \
+      rh-php${PHP_VERSION}-php-gd \
+      rh-php${PHP_VERSION}-php-xml \
+      rh-php${PHP_VERSION}-php-pdo \
+      rh-php${PHP_VERSION}-php-mbstring \
+      php-devel \
+      " \    
+    && yum -y install \
+                ${PHP_PACKAGES} \
+    # remove apt cache in order to improve Docker image size
+    && yum clean all
 
-# if there is a X-Forwarded-Proto set HTTPS=on
-RUN echo "SetEnvIf X-Forwarded-Proto https HTTPS=on" > /local/apache/conf/https-forward-flag.conf
+# Create local instance httpd-default
+RUN cp -R /etc/httpd /etc/httpd-default \
+    && rm -rf /etc/httpd-default/conf.d/*.* \
+    && cp -R /opt/rh/httpd24/root/usr/sbin/* /usr/sbin/
 
-# Xdebug configuration
-RUN yes | pecl install xdebug
+# create conf file
+COPY app/httpd/httpd.conf \
+     /etc/httpd-default/conf/httpd.conf
 
-RUN echo "zend_extension=$(find /usr/lib64/php/modules/ -name xdebug.so)" > /etc/php.d/xdebug.ini \
-    && echo "[xdebug]" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.remote_autostart=true" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.remote_enable = On" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.default_enable = On" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.remote_connect_back = On" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.remote_port = 9000" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.remote_handler=dbgp" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.remote_mode=req" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.idekey=netbeans-xdebug" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.var_display_max_data = 2048" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.var_display_max_depth = 128" >> /etc/php.d/xdebug.ini \
-    && echo "xdebug.max_nesting_level = 500" >> /etc/php.d/xdebug.ini
+# copy docroot config
+COPY app/httpd/default.conf \
+     /etc/httpd-default/conf.d/default.conf
+COPY app/httpd/default-ssl.conf \
+     /etc/httpd-default/conf.d/default-ssl.conf
 
-# Error logs
-RUN echo "log_errors = On" > /etc/php.d/error_log.ini \
-    && echo "display_errors= On" >> /etc/php.d/error_log.ini \
-    && echo "error_log=/local/apache/logs/php.error.log" >> /etc/php.d/error_log.ini
+# load php module
+COPY app/httpd/conf.modules.d/php.conf \
+     /etc/httpd-default/conf.modules.d/php.conf
+
+# create service file
+COPY app/httpd/httpd-default.service \
+     /usr/lib/systemd/system/httpd-default.service
+
+# create docroot folder
+RUN mkdir --parents /var/www/html/docroot
+
+# copy init script
+COPY app/init.sh /usr/local/bin
+
+# change workdir to Apache2 folder
+WORKDIR /var/www/html
+
+EXPOSE 80 443
+
+# docker configuration
+CMD ["init.sh"]
