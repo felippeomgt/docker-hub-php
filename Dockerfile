@@ -17,7 +17,7 @@ RUN readonly CENTOS_PACKAGES=" \
                 systemd \
                 curl \
                 centos-release-scl \
-				wget \
+                wget \
                 " \
     && yum -y update \
     && yum -y install \
@@ -59,7 +59,7 @@ RUN readonly PHP_PACKAGES=" \
 	
 # Dumb-init
 RUN wget -qO /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 \
-	&& chmod +x /usr/bin/dumb-init
+    && chmod +x /usr/bin/dumb-init
 
 # Create local instance httpd-default
 RUN cp -R /etc/httpd /etc/httpd-default \
