@@ -17,6 +17,7 @@ RUN readonly CENTOS_PACKAGES=" \
                 systemd \
                 curl \
                 centos-release-scl \
+				wget \
                 " \
     && yum -y update \
     && yum -y install \
@@ -55,6 +56,10 @@ RUN readonly PHP_PACKAGES=" \
                 ${PHP_PACKAGES} \
     # remove apt cache in order to improve Docker image size
     && yum clean all
+	
+# Dumb-init
+RUN wget -qO /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 \
+	&& chmod +x /usr/bin/dumb-init
 
 # Create local instance httpd-default
 RUN cp -R /etc/httpd /etc/httpd-default \
@@ -91,4 +96,5 @@ WORKDIR /var/www/html
 EXPOSE 80 443
 
 # docker configuration
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["init.sh"]
