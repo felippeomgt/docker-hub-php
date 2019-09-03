@@ -2,8 +2,7 @@ FROM ubuntu:16.04
 
 # define Docker image label information
 LABEL com.ciandt.vendor="CI&T Software SA" \
-      com.ciandt.maintainers.1="Ivan Pinatti - @ivan_pinatti" \
-      com.ciandt.maintainers.2="Thomas Bryan - @thobryan"
+      com.ciandt.maintainers.1="Ivan Pinatti - @ivan_pinatti"
 
 # defines root user, to perform privileged operations
 USER root
@@ -109,24 +108,21 @@ RUN service apache2 start \
 
 ## PHP
 # environment variables
-ENV PHP_MAJOR_VERSION 7.1
-ENV PHP_MINOR_VERSION 18
+ENV PHP_MAJOR_VERSION 7.2
+ENV PHP_MINOR_VERSION 22
 ENV PHP_VERSION ${PHP_MAJOR_VERSION}.${PHP_MINOR_VERSION}
-ENV PHP_EXTENSION_APCU_VERSION 5.1.11
-ENV PHP_EXTENSION_GNUPG_VERSION 1.6.0
-ENV PHP_EXTENSION_HTTP_VERSION 3.1.0
-ENV PHP_EXTENSION_IGBINARY_VERSION 2.0.6
-ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.3
-ENV PHP_EXTENSION_MEMCACHED_VERSION 3.0.4
-# ENV PHP_EXTENSION_MONGO_VERSION 1.6.14
-ENV PHP_EXTENSION_OAUTH_VERSION 2.0.2
+ENV PHP_EXTENSION_APCU_VERSION 5.1.17
+ENV PHP_EXTENSION_GNUPG_VERSION 1.4.0
+ENV PHP_EXTENSION_IGBINARY_VERSION 3.0.1
+ENV PHP_EXTENSION_MEMCACHED_VERSION 3.1.3
+ENV PHP_EXTENSION_HTTP_VERSION 3.2.1
+ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.4
+ENV PHP_EXTENSION_OAUTH_VERSION 2.0.3
 ENV PHP_EXTENSION_PROPRO_VERSION 2.1.0
 ENV PHP_EXTENSION_RAPHF_VERSION 2.0.0
 ENV PHP_EXTENSION_SSH2_VERSION 1.1.2
-# ENV PHP_EXTENSION_UPLOADPROGRESS_VERSION 1.0.3.1
-ENV PHP_EXTENSION_XDEBUG_VERSION 2.5.5
-# ENV PHP_EXTENSION_XHPROF_VERSION 0.9.4
-ENV PHP_EXTENSION_YAML_VERSION 2.0.2
+ENV PHP_EXTENSION_XDEBUG_VERSION 2.7.2
+ENV PHP_EXTENSION_YAML_VERSION 2.0.4
 
 # required packages
 RUN readonly PHP_DEV_PACKAGES=" \
@@ -249,20 +245,23 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-openssl=/usr \
          --enable-mbstring \
          --enable-mbregex \
-         --with-mcrypt \
          --with-mhash \
          --with-mysql-sock=/var/run/mysqld/mysqld.sock \
          --with-mysqli=/usr/bin/mysql_config \
          --enable-pcntl \
          --with-pcre-regex \
          --with-pgsql \
+         --with-mysqli \
          --with-pdo-mysql \
          --with-pdo-pgsql \
          --with-pdo-dblib \
          --with-pspell=/usr \
          --with-readline \
          --enable-shmop \
+         --with-zlib-dir \
+         --with-libxml-dir=/usr \
          --enable-soap \
+         --disable-rpath \
          --enable-sockets \
          --enable-sysvsem \
          --enable-sysvshm \
@@ -275,7 +274,10 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-xpm-dir=/usr \
          --enable-zip \
          --with-zlib \
+         --with-fpm-user=www-data \
+         --with-fpm-group=www-data \
          --with-libdir=/lib/x86_64-linux-gnu \
+         --enable-opcache \
          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
          CXXFLAGS="-fno-omit-frame-pointer" \
     # compile
@@ -334,101 +336,74 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
     # set PECL in php.ini
     && pecl config-set \
        php_ini \
-       /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini \
-    # install extensions (3rd party) through PECL, configure its ini files and links
-    # avoid issues with memcache extension: https://bugs.php.net/bug.php?id=66230
-    && CFLAGS="-fgnu89-inline" pecl install \
-       apcu-"${PHP_EXTENSION_APCU_VERSION}" \
-       gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
-       igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
-       imagick-"${PHP_EXTENSION_IMAGICK_VERSION}" \
-       memcached-"${PHP_EXTENSION_MEMCACHED_VERSION}" \
-       OAuth-"${PHP_EXTENSION_OAUTH_VERSION}" \
-       propro-"${PHP_EXTENSION_PROPRO_VERSION}" \
-       raphf-"${PHP_EXTENSION_RAPHF_VERSION}" \
-       ssh2-"${PHP_EXTENSION_SSH2_VERSION}" \
-       xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
-       yaml-"${PHP_EXTENSION_YAML_VERSION}"
+       /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini
+
+# install extensions (3rd party) through PECL, configure its ini files and links
+RUN pecl install apcu-"${PHP_EXTENSION_APCU_VERSION}"
+RUN pecl install gnupg-"${PHP_EXTENSION_GNUPG_VERSION}"
+RUN pecl install raphf-"${PHP_EXTENSION_RAPHF_VERSION}"
+RUN pecl install propro-"${PHP_EXTENSION_PROPRO_VERSION}"
+RUN pecl install igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}"
+RUN pecl install imagick-"${PHP_EXTENSION_IMAGICK_VERSION}"
+RUN pecl install memcached-"${PHP_EXTENSION_MEMCACHED_VERSION}"
+RUN pecl install oauth-"${PHP_EXTENSION_OAUTH_VERSION}"
+RUN pecl install yaml-"${PHP_EXTENSION_YAML_VERSION}"
+RUN pecl install ssh2-"${PHP_EXTENSION_SSH2_VERSION}"
+RUN pecl install xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}"
 
 # php configuration files
-RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
-    && cd /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d \
-    && echo "extension=apcu.so" > apcu.ini \
-    && echo "extension=gnupg.so" > gnupg.ini \
-    && echo "extension=igbinary.so" > igbinary.ini \
-    && echo "extension=imagick.so" > imagick.ini \
-    && echo "extension=memcached.so" > memcached.ini \
-    && echo "extension=oauth.so" > oauth.ini \
-    && echo "extension=oauth.so" > oauth.ini \
-    && echo "extension=propro.so" > propro.ini \
-    && echo "extension=raphf.so" > raphf.ini \
-    && echo "extension=ssh2.so" > ssh2.ini \
-    && echo "extension=yaml.so" > yaml.ini \
-    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20160303/opcache.so" \
-       > opcache.ini \
-    && echo "zend_extension=/usr/local/php${PHP_MAJOR_VERSION}/lib/php/extensions/no-debug-non-zts-20160303/xdebug.so" \
-        > xdebug.ini \
-    # modify xdebug options
-    && echo "xdebug.remote_enable=On" >> xdebug.ini \
-    && echo "xdebug.remote_connect_back=On" >> xdebug.ini \
-    && echo "xdebug.remote_port=9000" >> xdebug.ini \
-    && echo "xdebug.remote_handler=dbgp" >> xdebug.ini \
-    && echo "xdebug.remote_mode=req" >> xdebug.ini \
-    && echo "xdebug.profiler_enable=Off" >> xdebug.ini \
-    && echo "xdebug.profiler_enable_trigger=On" >> xdebug.ini \
-    && echo "xdebug.var_display_max_data=1024" >> xdebug.ini \
-    && echo "xdebug.var_display_max_depth=128" >> xdebug.ini \
-    && echo "xdebug.max_nesting_level=256" >> xdebug.ini \
-    && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/apcu.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/igbinary.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/igbinary.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/imagick.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/imagick.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/memcached.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/memcached.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/opcache.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/opcache.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/propro.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/propro.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/raphf.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/raphf.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ssh2.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/ssh2.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xdebug.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xdebug.ini \
-    # pecl_http is dependent of raphf and it needs to be installed later
-    && echo '' | pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
-    && echo "extension=http.so" > http.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini \
-    && ln --force --symbolic \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/yaml.ini \
-       /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/yaml.ini \
-    # remove DEV packages
-    && apt-get autoremove \
-                --purge \
-                --assume-yes \
-                ${PHP_DEV_PACKAGES} \
-    # remove apt cache in order to improve Docker image size
-    && apt-get clean
+RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/apcu.ini      /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/gnupg.ini     /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/igbinary.ini  /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/imagick.ini   /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/memcached.ini /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/oauth.ini     /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/opcache.ini   /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/propro.ini    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/raphf.ini     /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/ssh2.ini      /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/xdebug.ini    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/yaml.ini      /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+
+RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/apcu.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/igbinary.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/igbinary.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/imagick.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/imagick.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/memcached.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/memcached.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/opcache.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/opcache.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/propro.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/propro.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/raphf.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/raphf.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ssh2.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/ssh2.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xdebug.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xdebug.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/yaml.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/yaml.ini
+
+# pecl_http is dependent of raphf and it needs to be installed later
+RUN pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}"
+COPY php/conf.d/http.ini /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini
+# remove DEV packages
+RUN apt-get autoremove \
+	--purge \
+	--assume-yes \
+	${PHP_DEV_PACKAGES}
+# remove apt cache in order to improve Docker image size
+RUN apt-get clean
 
 # set PHP FPM configuration
 COPY php/www.conf.default \
