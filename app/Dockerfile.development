@@ -339,49 +339,64 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
        /usr/local/php"${PHP_MAJOR_VERSION}"/etc/cli/php.ini
 
 # install extensions (3rd party) through PECL, configure its ini files and links
-RUN   pecl install \
-         apcu-"${PHP_EXTENSION_APCU_VERSION}" \
-         gnupg-"${PHP_EXTENSION_GNUPG_VERSION}" \
-         raphf-"${PHP_EXTENSION_RAPHF_VERSION}" \
-         propro-"${PHP_EXTENSION_PROPRO_VERSION}" \
-         igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}" \
-         imagick-"${PHP_EXTENSION_IMAGICK_VERSION}" \
-         memcached-"${PHP_EXTENSION_MEMCACHED_VERSION}" \
-         oauth-"${PHP_EXTENSION_OAUTH_VERSION}" \
-         yaml-"${PHP_EXTENSION_YAML_VERSION}" \
-         ssh2-"${PHP_EXTENSION_SSH2_VERSION}" \
-         xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}" \
-   # php configuration files
-   && mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d
-COPY php/conf.d /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
-RUN   ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
-          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/apcu.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/igbinary.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/igbinary.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/imagick.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/imagick.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/memcached.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/memcached.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/opcache.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/opcache.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/propro.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/propro.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/raphf.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/raphf.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ssh2.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/ssh2.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xdebug.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xdebug.ini \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/yaml.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/yaml.ini \
-   # pecl_http is dependent of raphf and it needs to be installed later
-   && pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}" \
-   && ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
-            /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini
+RUN pecl install apcu-"${PHP_EXTENSION_APCU_VERSION}"
+RUN pecl install gnupg-"${PHP_EXTENSION_GNUPG_VERSION}"
+RUN pecl install raphf-"${PHP_EXTENSION_RAPHF_VERSION}"
+RUN pecl install propro-"${PHP_EXTENSION_PROPRO_VERSION}"
+RUN pecl install igbinary-"${PHP_EXTENSION_IGBINARY_VERSION}"
+RUN pecl install imagick-"${PHP_EXTENSION_IMAGICK_VERSION}"
+RUN pecl install memcached-"${PHP_EXTENSION_MEMCACHED_VERSION}"
+RUN pecl install oauth-"${PHP_EXTENSION_OAUTH_VERSION}"
+RUN pecl install yaml-"${PHP_EXTENSION_YAML_VERSION}"
+RUN pecl install ssh2-"${PHP_EXTENSION_SSH2_VERSION}"
+RUN pecl install xdebug-"${PHP_EXTENSION_XDEBUG_VERSION}"
+
+# php configuration files
+RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/apcu.ini      /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/gnupg.ini     /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/igbinary.ini  /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/imagick.ini   /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/memcached.ini /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/oauth.ini     /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/opcache.ini   /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/propro.ini    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/raphf.ini     /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/ssh2.ini      /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/xdebug.ini    /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+COPY php/conf.d/yaml.ini      /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+
+RUN mkdir --parents /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/apcu.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/apcu.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/gnupg.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/gnupg.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/igbinary.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/igbinary.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/imagick.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/imagick.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/memcached.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/memcached.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/oauth.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/oauth.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/opcache.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/opcache.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/propro.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/propro.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/raphf.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/raphf.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/ssh2.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/ssh2.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/xdebug.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/xdebug.ini
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/yaml.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/yaml.ini
+
+# pecl_http is dependent of raphf and it needs to be installed later
+RUN pecl install pecl_http-"${PHP_EXTENSION_HTTP_VERSION}"
+COPY php/conf.d/http.ini /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d
+RUN ln -s /usr/local/php${PHP_MAJOR_VERSION}/etc/conf.d/http.ini \
+          /usr/local/php${PHP_MAJOR_VERSION}/etc/cli/conf.d/http.ini
 # remove DEV packages
 RUN apt-get autoremove \
 	--purge \
