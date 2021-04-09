@@ -145,7 +145,6 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libmysqlclient-dev \
       libsasl2-dev \
       libmhash-dev \
-      # unixodbc-dev \
       freetds-dev \
       libpspell-dev \
       libsnmp-dev \
@@ -161,6 +160,9 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libkrb5-dev \
       libmemcached-dev \
       libzip-dev \
+      sqlite3 \
+      libsqlite3-dev \
+      libonig-dev \
       " \
     && readonly PHP_PACKAGES=" \
                   autoconf \
