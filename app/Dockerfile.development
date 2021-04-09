@@ -176,13 +176,10 @@ RUN readonly PHP_DEV_PACKAGES=" \
                   libc-client2007e \
                   libxslt1.1 \
                   libudev1 \
-                  # libdb4.8 \
                   libfreetype6 \
-                  # unixodbc \
                   libreadline6 \
                   libssh2-1 \
                   libgpgme11 \
-                  # php-pear \
                   libmemcached11 \
                   " \
     && apt-get install \
@@ -279,6 +276,7 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-fpm-user=www-data \
          --with-fpm-group=www-data \
          --with-libdir=/lib/x86_64-linux-gnu \
+         --with-pear \
          --enable-opcache \
          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
          CXXFLAGS="-fno-omit-frame-pointer" \
