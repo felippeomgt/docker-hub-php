@@ -225,14 +225,15 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-gmp \
          --with-bz2=/usr \
          --enable-calendar \
+         --enable-intl=shared \
          --with-curl \
          --enable-dba \
          --with-db4 \
          --enable-exif \
-         --with-gd \
-         --with-jpeg-dir=/usr/lib \
+         --enable-gd \
+         --with-jpeg \
          --with-png-dir=/usr/lib \
-         --with-freetype-dir=/usr \
+         --with-freetype \
          --enable-ftp \
          --with-gettext \
          --with-imap \
@@ -250,7 +251,8 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --enable-pcntl \
          --with-pcre-regex \
          --with-pgsql \
-         --with-mysqli \
+         --with-mssql \
+         --with-mysql \
          --with-pdo-mysql \
          --with-pdo-pgsql \
          --with-pdo-dblib \
@@ -271,12 +273,13 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-xmlrpc \
          --with-xsl \
          --with-xpm-dir=/usr \
-         --enable-zip \
+         --with-zip \
          --with-zlib \
          --with-fpm-user=www-data \
          --with-fpm-group=www-data \
          --with-libdir=/lib/x86_64-linux-gnu \
          --with-pear \
+         --with-mcrypt \
          --enable-opcache \
          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
          CXXFLAGS="-fno-omit-frame-pointer" \
