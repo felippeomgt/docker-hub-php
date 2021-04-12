@@ -1,8 +1,7 @@
 FROM ubuntu:16.04
 
 # define Docker image label information
-LABEL com.ciandt.vendor="CI&T Software SA" \
-      com.ciandt.maintainers.1="Ivan Pinatti - @ivan_pinatti"
+LABEL com.ciandt.vendor="CI&T Software SA"
 
 # defines root user, to perform privileged operations
 USER root
@@ -108,21 +107,21 @@ RUN service apache2 start \
 
 ## PHP
 # environment variables
-ENV PHP_MAJOR_VERSION 7.3
-ENV PHP_MINOR_VERSION 14
+ENV PHP_MAJOR_VERSION 7.4
+ENV PHP_MINOR_VERSION 15
 ENV PHP_VERSION ${PHP_MAJOR_VERSION}.${PHP_MINOR_VERSION}
-ENV PHP_EXTENSION_APCU_VERSION 5.1.17
+ENV PHP_EXTENSION_APCU_VERSION 5.1.19
 ENV PHP_EXTENSION_GNUPG_VERSION 1.4.0
-ENV PHP_EXTENSION_IGBINARY_VERSION 3.0.1
-ENV PHP_EXTENSION_MEMCACHED_VERSION 3.1.3
-ENV PHP_EXTENSION_HTTP_VERSION 3.2.1
+ENV PHP_EXTENSION_IGBINARY_VERSION 3.2.1
+ENV PHP_EXTENSION_MEMCACHED_VERSION 3.1.5
+ENV PHP_EXTENSION_HTTP_VERSION 3.2.4
 ENV PHP_EXTENSION_IMAGICK_VERSION 3.4.4
-ENV PHP_EXTENSION_OAUTH_VERSION 2.0.3
+ENV PHP_EXTENSION_OAUTH_VERSION 2.0.7
 ENV PHP_EXTENSION_PROPRO_VERSION 2.1.0
-ENV PHP_EXTENSION_RAPHF_VERSION 2.0.0
+ENV PHP_EXTENSION_RAPHF_VERSION 2.0.1
 ENV PHP_EXTENSION_SSH2_VERSION 1.2
-ENV PHP_EXTENSION_XDEBUG_VERSION 2.7.2
-ENV PHP_EXTENSION_YAML_VERSION 2.0.4
+ENV PHP_EXTENSION_XDEBUG_VERSION 3.0.4
+ENV PHP_EXTENSION_YAML_VERSION 2.2.1
 
 # required packages
 RUN readonly PHP_DEV_PACKAGES=" \
@@ -146,7 +145,6 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libmysqlclient-dev \
       libsasl2-dev \
       libmhash-dev \
-      # unixodbc-dev \
       freetds-dev \
       libpspell-dev \
       libsnmp-dev \
@@ -162,6 +160,11 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libkrb5-dev \
       libmemcached-dev \
       libzip-dev \
+      sqlite3 \
+      libsqlite3-dev \
+      libsodium-dev \
+      libwebp-dev \
+      libonig-dev \
       " \
     && readonly PHP_PACKAGES=" \
                   autoconf \
@@ -175,13 +178,10 @@ RUN readonly PHP_DEV_PACKAGES=" \
                   libc-client2007e \
                   libxslt1.1 \
                   libudev1 \
-                  # libdb4.8 \
                   libfreetype6 \
-                  # unixodbc \
                   libreadline6 \
                   libssh2-1 \
                   libgpgme11 \
-                  # php-pear \
                   libmemcached11 \
                   " \
     && apt-get install \
@@ -227,14 +227,15 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-gmp \
          --with-bz2=/usr \
          --enable-calendar \
+         --enable-intl=shared \
          --with-curl \
          --enable-dba \
          --with-db4 \
          --enable-exif \
-         --with-gd \
-         --with-jpeg-dir=/usr/lib \
-         --with-png-dir=/usr/lib \
-         --with-freetype-dir=/usr \
+         --enable-gd \
+         --with-jpeg \
+         --with-webp \
+         --with-freetype \
          --enable-ftp \
          --with-gettext \
          --with-imap \
@@ -252,15 +253,14 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --enable-pcntl \
          --with-pcre-regex \
          --with-pgsql \
-         --with-mysqli \
+         --with-mssql \
+         --with-mysql \
          --with-pdo-mysql \
          --with-pdo-pgsql \
          --with-pdo-dblib \
          --with-pspell=/usr \
          --with-readline \
          --enable-shmop \
-         --with-zlib-dir \
-         --with-libxml-dir=/usr \
          --enable-soap \
          --disable-rpath \
          --enable-sockets \
@@ -268,16 +268,18 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --enable-sysvshm \
          --enable-sysvmsg \
          --with-tidy \
-         --enable-wddx \
          --enable-xml \
          --with-xmlrpc \
          --with-xsl \
-         --with-xpm-dir=/usr \
-         --enable-zip \
+         --with-xpm \
+         --with-zip \
          --with-zlib \
          --with-fpm-user=www-data \
          --with-fpm-group=www-data \
          --with-libdir=/lib/x86_64-linux-gnu \
+         --with-pear \
+         --with-sodium \
+         --with-mcrypt \
          --enable-opcache \
          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
          CXXFLAGS="-fno-omit-frame-pointer" \
