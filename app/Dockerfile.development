@@ -162,6 +162,8 @@ RUN readonly PHP_DEV_PACKAGES=" \
       libzip-dev \
       sqlite3 \
       libsqlite3-dev \
+      libsodium-dev \
+      libwebp-dev \
       libonig-dev \
       " \
     && readonly PHP_PACKAGES=" \
@@ -232,7 +234,7 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --enable-exif \
          --enable-gd \
          --with-jpeg \
-         --with-png-dir=/usr/lib \
+         --with-webp \
          --with-freetype \
          --enable-ftp \
          --with-gettext \
@@ -259,8 +261,6 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --with-pspell=/usr \
          --with-readline \
          --enable-shmop \
-         --with-zlib-dir \
-         --with-libxml-dir=/usr \
          --enable-soap \
          --disable-rpath \
          --enable-sockets \
@@ -268,17 +268,17 @@ RUN mkdir --parents /tmp/php/src/${PHP_VERSION} \
          --enable-sysvshm \
          --enable-sysvmsg \
          --with-tidy \
-         --enable-wddx \
          --enable-xml \
          --with-xmlrpc \
          --with-xsl \
-         --with-xpm-dir=/usr \
+         --with-xpm \
          --with-zip \
          --with-zlib \
          --with-fpm-user=www-data \
          --with-fpm-group=www-data \
          --with-libdir=/lib/x86_64-linux-gnu \
          --with-pear \
+         --with-sodium \
          --with-mcrypt \
          --enable-opcache \
          CFLAGS="-g -O2 -fno-omit-frame-pointer" \
