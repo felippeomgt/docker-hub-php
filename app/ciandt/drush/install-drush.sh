@@ -40,5 +40,5 @@ readonly DRUSH_PACKAGES=" \
 # create a link for drush
 "${LN}" --force \
         --symbolic \
-        /root/.composer/vendor/drush/drush/drush \
+        /root/.config/composer/vendor/drush/drush/drush \
         /usr/local/bin/drush
