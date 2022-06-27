@@ -21,28 +21,28 @@ These images will have the following name pattern: __acquia-*YYYY-MM-DD*__
 These are the currently software versions bundled in the image(s) by tag.
 
 * acquia-latest __OR__ acquia-2016-11-30
-  * Ubuntu 12.04.5
-  * Apache 2.2.22
-  * PHP 5.6.28 (plus extensions)
-    * APCu 4.0.10
-    * Gnupg 1.4.0
-    * HTTP 2.5.6
-    * Igbinary 1.2.1
-    * Imagick 3.4.3RC1
-    * Memcache 3.0.8
-    * Mongo 1.6.14
-    * Oauth 1.2.3
-    * Propro 1.0.2
-    * Raphf 1.1.2
-    * SSH2 0.12
-    * Upload Progress 1.0.3.1
-    * Xdebug 2.4.1
-    * Xhprof 0.9.4
-    * YAML 1.3.0
+  * Ubuntu 16.04.7
+  * Apache 2.4.18
+  * PHP 8.0.0 (plus extensions)
+    * APCu 5.1.20
+    * Gnupg 1.5.0
+    * HTTP 5.2.0
+    * Igbinary 3.2.2
+    * Imagick 3.5.0
+    * Memcache 8.0
+    * Mongo 1.6.14 (disabled)
+    * Oauth 2.0.7
+    * Propro 2.1.0 (disabled)
+    * Raphf 2.1.0 (disabled)
+    * SSH2 1.3.1
+    * Upload Progress 1.0.3.1 (disabled)
+    * Xdebug 3.1.5
+    * Xhprof 0.9.4 (disabled)
+    * YAML 2.2.1
   * Dumb-init 1.2.0
   * __Pre-loaded scripts for customization__
-    * Composer 1.2.1
-    * Drush 8.1.3
+    * Composer 2.0.12
+    * Drush 8.4.11
     * Grunt CLI 1.2.0
       * Compass 1.1.1
     * Node.js 0.10.37
