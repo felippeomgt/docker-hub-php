@@ -30,14 +30,9 @@ These are the currently software versions bundled in the image(s) by tag.
     * Igbinary 3.2.2
     * Imagick 3.5.0
     * Memcache 8.0
-    * Mongo 1.6.14 (disabled)
     * Oauth 2.0.7
-    * Propro 2.1.0 (disabled)
-    * Raphf 2.1.0 (disabled)
     * SSH2 1.3.1
-    * Upload Progress 1.0.3.1 (disabled)
     * Xdebug 3.1.5
-    * Xhprof 0.9.4 (disabled)
     * YAML 2.2.1
   * Dumb-init 1.2.0
   * __Pre-loaded scripts for customization__
